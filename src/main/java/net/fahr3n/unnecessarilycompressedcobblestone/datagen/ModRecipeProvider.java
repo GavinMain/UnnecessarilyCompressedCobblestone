@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
 import net.fahr3n.unnecessarilycompressedcobblestone.block.ModBlocks;
+import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -34,6 +35,37 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
         for (int level = 2; level <= ModBlocks.MAX_COMPRESSION_LEVEL; level++) {
             compress(recipeOutput, ModBlocks.byLevel(level - 1).get(), ModBlocks.byLevel(level).get());
         }
+
+        // The armor set: one compression level deeper for every piece further down the body.
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, ModItems.COMPRESSED_COBBLESTONE_HELMET.get())
+                .pattern("CCC")
+                .pattern("C C")
+                .define('C', ModBlocks.byLevel(1).get())
+                .unlockedBy(getHasName(ModBlocks.byLevel(1).get()), has(ModBlocks.byLevel(1).get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, ModItems.COMPRESSED_COBBLESTONE_CHESTPLATE.get())
+                .pattern("C C")
+                .pattern("CCC")
+                .pattern("CCC")
+                .define('C', ModBlocks.byLevel(2).get())
+                .unlockedBy(getHasName(ModBlocks.byLevel(2).get()), has(ModBlocks.byLevel(2).get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, ModItems.COMPRESSED_COBBLESTONE_LEGGINGS.get())
+                .pattern("CCC")
+                .pattern("C C")
+                .pattern("C C")
+                .define('C', ModBlocks.byLevel(3).get())
+                .unlockedBy(getHasName(ModBlocks.byLevel(3).get()), has(ModBlocks.byLevel(3).get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, ModItems.COMPRESSED_COBBLESTONE_BOOTS.get())
+                .pattern("C C")
+                .pattern("C C")
+                .define('C', ModBlocks.byLevel(4).get())
+                .unlockedBy(getHasName(ModBlocks.byLevel(4).get()), has(ModBlocks.byLevel(4).get()))
+                .save(recipeOutput);
     }
 
     /** Nine of {@code ingredient} in a crafting grid makes one {@code result}. */

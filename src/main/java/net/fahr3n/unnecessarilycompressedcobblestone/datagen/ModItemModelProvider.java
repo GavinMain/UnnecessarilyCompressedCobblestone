@@ -1,6 +1,7 @@
 package net.fahr3n.unnecessarilycompressedcobblestone.datagen;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
+import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.client.model.generators.ItemModelProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
@@ -12,8 +13,11 @@ public class ModItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        // basicItem(ModItems.SOME_ITEM.get());
         // Each item listed here needs assets/<modid>/textures/item/<item_id>.png to exist
         // in src/main/resources, otherwise datagen fails with a missing texture error.
+        basicItem(ModItems.COMPRESSED_COBBLESTONE_HELMET.get());
+        basicItem(ModItems.COMPRESSED_COBBLESTONE_CHESTPLATE.get());
+        basicItem(ModItems.COMPRESSED_COBBLESTONE_LEGGINGS.get());
+        basicItem(ModItems.COMPRESSED_COBBLESTONE_BOOTS.get());
     }
 }

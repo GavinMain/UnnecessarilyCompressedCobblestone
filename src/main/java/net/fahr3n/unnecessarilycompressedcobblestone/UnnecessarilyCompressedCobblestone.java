@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.block.ModBlocks;
+import net.fahr3n.unnecessarilycompressedcobblestone.item.ModArmorMaterials;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModCreativeModeTabs;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
 import net.neoforged.bus.api.IEventBus;
@@ -38,6 +39,7 @@ public class UnnecessarilyCompressedCobblestone {
 
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
+        ModArmorMaterials.register(modEventBus);
 
         // Register the item to a creative tab
         modEventBus.addListener(this::addCreative);

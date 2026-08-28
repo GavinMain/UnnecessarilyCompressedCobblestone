@@ -20,6 +20,11 @@ public class ModCreativeModeTabs {
                     .title(Component.translatable("creativetab.unnecessarilycompressedcobblestone.ucc"))
                     .displayItems((itemDisplayParameters, output) -> {
                         ModBlocks.COMPRESSED_COBBLESTONE_LEVELS.forEach(output::accept);
+
+                        output.accept(ModItems.COMPRESSED_COBBLESTONE_HELMET);
+                        output.accept(ModItems.COMPRESSED_COBBLESTONE_CHESTPLATE);
+                        output.accept(ModItems.COMPRESSED_COBBLESTONE_LEGGINGS);
+                        output.accept(ModItems.COMPRESSED_COBBLESTONE_BOOTS);
                     }).build());
 
     public static void register(IEventBus eventBus) {

@@ -3,7 +3,6 @@ package net.fahr3n.unnecessarilycompressedcobblestone.datagen;
 import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
 import net.fahr3n.unnecessarilycompressedcobblestone.block.ModBlocks;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.model.generators.BlockStateProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.registries.DeferredBlock;
@@ -15,17 +14,15 @@ public class ModBlockStateProvider extends BlockStateProvider {
 
     @Override
     protected void registerStatesAndModels() {
-        // Every compression level shares one texture, so the models point at this file
-        // rather than at a texture named after each block.
-        ResourceLocation texture = modLoc("block/compressed_cobblestone");
-
+        // Every level has its own texture file at block/<block id>, so each level can be
+        // redrawn on its own later even though they all currently share the same image.
         for (DeferredBlock<?> block : ModBlocks.COMPRESSED_COBBLESTONE_LEVELS) {
-            blockWithItem(block, texture);
+            blockWithItem(block);
         }
     }
 
-    private void blockWithItem(DeferredBlock<?> deferredBlock, ResourceLocation texture) {
+    private void blockWithItem(DeferredBlock<?> deferredBlock) {
         String name = deferredBlock.getId().getPath();
-        simpleBlockWithItem(deferredBlock.get(), models().cubeAll(name, texture));
+        simpleBlockWithItem(deferredBlock.get(), models().cubeAll(name, modLoc("block/" + name)));
     }
 }

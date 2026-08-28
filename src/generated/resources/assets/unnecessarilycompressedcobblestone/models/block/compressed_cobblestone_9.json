@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:block/cube_all",
   "textures": {
-    "all": "unnecessarilycompressedcobblestone:block/compressed_cobblestone"
+    "all": "unnecessarilycompressedcobblestone:block/compressed_cobblestone_9"
   }
 }

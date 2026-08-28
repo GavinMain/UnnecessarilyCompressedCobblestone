@@ -25,11 +25,19 @@ public class DataGenerators {
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 
+        // Datapack registries first: everything downstream that needs to look up an entry the mod
+        // itself defines (the recipe provider needs the Compression enchantment) has to be handed
+        // the patched provider rather than the vanilla one.
+        ModDatapackProvider datapackProvider = new ModDatapackProvider(packOutput, lookupProvider);
+        generator.addProvider(event.includeServer(), datapackProvider);
+        CompletableFuture<HolderLookup.Provider> registries = datapackProvider.getRegistryProvider();
+
         // Server-side data: loot tables, recipes, tags
         generator.addProvider(event.includeServer(), new LootTableProvider(packOutput, Collections.emptySet(),
-                List.of(new LootTableProvider.SubProviderEntry(ModBlockLootTableProvider::new, LootContextParamSets.BLOCK)),
+                List.of(new LootTableProvider.SubProviderEntry(ModBlockLootTableProvider::new, LootContextParamSets.BLOCK),
+                        new LootTableProvider.SubProviderEntry(ModEntityLootTableProvider::new, LootContextParamSets.ENTITY)),
                 lookupProvider));
-        generator.addProvider(event.includeServer(), new ModRecipeProvider(packOutput, lookupProvider));
+        generator.addProvider(event.includeServer(), new ModRecipeProvider(packOutput, registries));
 
         BlockTagsProvider blockTagsProvider = new ModBlockTagProvider(packOutput, lookupProvider, existingFileHelper);
         generator.addProvider(event.includeServer(), blockTagsProvider);

@@ -1,5 +1,11 @@
 package net.fahr3n.unnecessarilycompressedcobblestone;
 
+import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
+import net.fahr3n.unnecessarilycompressedcobblestone.entity.client.CompressedCobblestoneArrowRenderer;
+import net.fahr3n.unnecessarilycompressedcobblestone.entity.client.CompressedGolemRenderer;
+import net.fahr3n.unnecessarilycompressedcobblestone.screen.ModMenuTypes;
+import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.CompressionInscriberScreen;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.ModItemProperties;
 import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -7,6 +13,8 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
@@ -27,5 +35,18 @@ public class UCCClient {
         // Some client setup code
         UnnecessarilyCompressedCobblestone.LOGGER.info("HELLO FROM CLIENT SETUP");
         UnnecessarilyCompressedCobblestone.LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
+
+        event.enqueueWork(ModItemProperties::addCustomItemProperties);
+    }
+
+    @SubscribeEvent
+    static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(ModEntities.COMPRESSED_COBBLESTONE_ARROW.get(), CompressedCobblestoneArrowRenderer::new);
+        event.registerEntityRenderer(ModEntities.COMPRESSED_GOLEM.get(), CompressedGolemRenderer::new);
+    }
+
+    @SubscribeEvent
+    static void registerMenuScreens(RegisterMenuScreensEvent event) {
+        event.register(ModMenuTypes.COMPRESSION_INSCRIBER_MENU.get(), CompressionInscriberScreen::new);
     }
 }

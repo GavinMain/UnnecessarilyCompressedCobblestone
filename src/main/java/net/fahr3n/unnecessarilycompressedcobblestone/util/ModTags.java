@@ -18,7 +18,8 @@ public class ModTags {
     }
 
     public static class Items {
-        // public static final TagKey<Item> SOME_ITEM_TAG = createTag("some_item_tag");
+        /** Gear the Compression Inscriber will pour energy into. */
+        public static final TagKey<Item> INSCRIBABLE = createTag("inscribable");
 
         private static TagKey<Item> createTag(String name) {
             return ItemTags.create(ResourceLocation.fromNamespaceAndPath(UnnecessarilyCompressedCobblestone.MOD_ID, name));

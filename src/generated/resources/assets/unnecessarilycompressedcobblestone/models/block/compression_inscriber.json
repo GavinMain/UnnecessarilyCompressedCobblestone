@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "unnecessarilycompressedcobblestone:block/compression_inscriber_side",
+    "side": "unnecessarilycompressedcobblestone:block/compression_inscriber_side",
+    "top": "unnecessarilycompressedcobblestone:block/compression_inscriber_top"
+  }
+}

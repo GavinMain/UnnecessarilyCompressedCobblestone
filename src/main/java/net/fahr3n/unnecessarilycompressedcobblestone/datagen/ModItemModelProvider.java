@@ -19,5 +19,16 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.COMPRESSED_COBBLESTONE_CHESTPLATE.get());
         basicItem(ModItems.COMPRESSED_COBBLESTONE_LEGGINGS.get());
         basicItem(ModItems.COMPRESSED_COBBLESTONE_BOOTS.get());
+
+        basicItem(ModItems.COMPRESSED_COBBLESTONE_ARROW.get());
+        basicItem(ModItems.COMPRESSED_COBBLESTONE_APPLE.get());
+        basicItem(ModItems.TIER_1_COMPRESSED_HEART.get());
+
+        // Tools and weapons are held in the hand, so they use the handheld parent instead.
+        handheldItem(ModItems.COMPRESSED_COBBLESTONE_SWORD.get());
+
+        // The bow is deliberately absent: its model needs pulling overrides and held-item display
+        // transforms, so it is written by hand in src/main/resources alongside its three pulling
+        // stages, the same way vanilla's bow model is.
     }
 }

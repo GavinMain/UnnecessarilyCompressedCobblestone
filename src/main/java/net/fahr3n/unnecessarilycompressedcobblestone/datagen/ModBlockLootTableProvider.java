@@ -31,6 +31,9 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         for (DeferredBlock<?> block : ModBlocks.COMPRESSED_COBBLESTONE_LEVELS) {
             dropSelf(block.get());
         }
+
+        dropSelf(ModBlocks.CARVED_COBBLESTONE_TIER_1.get());
+        dropSelf(ModBlocks.COMPRESSION_INSCRIBER.get());
     }
 
     /** Ore-style drop with a random count, respecting Silk Touch and Fortune. */

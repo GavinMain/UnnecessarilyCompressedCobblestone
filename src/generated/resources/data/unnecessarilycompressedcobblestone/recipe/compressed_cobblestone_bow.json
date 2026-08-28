@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "unnecessarilycompressedcobblestone:compressed_cobblestone_7"
+    },
+    "X": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    " CX",
+    "C X",
+    " CX"
+  ],
+  "result": {
+    "count": 1,
+    "id": "unnecessarilycompressedcobblestone:compressed_cobblestone_bow"
+  }
+}

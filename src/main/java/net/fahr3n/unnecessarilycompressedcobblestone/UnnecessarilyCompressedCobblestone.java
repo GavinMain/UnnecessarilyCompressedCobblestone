@@ -5,9 +5,14 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.block.ModBlocks;
+import net.fahr3n.unnecessarilycompressedcobblestone.block.entity.ModBlockEntities;
+import net.fahr3n.unnecessarilycompressedcobblestone.component.ModDataComponents;
+import net.fahr3n.unnecessarilycompressedcobblestone.enchantment.ModEnchantmentEffects;
+import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModArmorMaterials;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModCreativeModeTabs;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
+import net.fahr3n.unnecessarilycompressedcobblestone.screen.ModMenuTypes;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -40,6 +45,11 @@ public class UnnecessarilyCompressedCobblestone {
         ModItems.register(modEventBus);
         ModBlocks.register(modEventBus);
         ModArmorMaterials.register(modEventBus);
+        ModEnchantmentEffects.register(modEventBus);
+        ModEntities.register(modEventBus);
+        ModBlockEntities.register(modEventBus);
+        ModDataComponents.register(modEventBus);
+        ModMenuTypes.register(modEventBus);
 
         // Register the item to a creative tab
         modEventBus.addListener(this::addCreative);

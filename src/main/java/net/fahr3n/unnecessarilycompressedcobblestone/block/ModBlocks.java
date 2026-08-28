@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
+import net.fahr3n.unnecessarilycompressedcobblestone.block.custom.CarvedCobblestoneBlock;
+import net.fahr3n.unnecessarilycompressedcobblestone.block.custom.CompressionInscriberBlock;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -26,6 +28,17 @@ public class ModBlocks {
 
     public static final DeferredBlock<Block> DOUBLE_COMPRESSED_COBBLESTONE = registerBlock("compressed_cobblestone_2",
             () -> new Block(compressedProperties()));
+
+    /**
+     * The golem head: carved out of a level 11 block with shears, the way a pumpkin is.
+     * Registered outside the level list because it is not a compression level of its own.
+     */
+    public static final DeferredBlock<CarvedCobblestoneBlock> CARVED_COBBLESTONE_TIER_1 =
+            registerBlock("carved_cobblestone_tier_1", () -> new CarvedCobblestoneBlock(compressedProperties()));
+
+    /** The table that moves Compression Energy out of cobblestone and into gear. */
+    public static final DeferredBlock<CompressionInscriberBlock> COMPRESSION_INSCRIBER =
+            registerBlock("compression_inscriber", () -> new CompressionInscriberBlock(compressedProperties()));
 
     /**
      * Every compression level in order, so datagen can loop over them.

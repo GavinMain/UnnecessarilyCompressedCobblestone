@@ -1,0 +1,6 @@
+{
+    "parent": "unnecessarilycompressedcobblestone:item/compressed_cobblestone_bow",
+    "textures": {
+        "layer0": "unnecessarilycompressedcobblestone:item/compressed_cobblestone_bow_pulling_2"
+    }
+}

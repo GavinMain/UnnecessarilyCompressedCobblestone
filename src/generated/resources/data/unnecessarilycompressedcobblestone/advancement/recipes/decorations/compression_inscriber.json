@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "unnecessarilycompressedcobblestone:compression_inscriber"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_tier_1_compressed_heart": {
+      "conditions": {
+        "items": [
+          {
+            "items": "unnecessarilycompressedcobblestone:tier_1_compressed_heart"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_tier_1_compressed_heart"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "unnecessarilycompressedcobblestone:compression_inscriber"
+    ]
+  }
+}

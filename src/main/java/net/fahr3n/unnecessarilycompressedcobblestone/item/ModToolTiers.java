@@ -18,5 +18,5 @@ public class ModToolTiers {
      */
     public static final Tier COMPRESSED_COBBLESTONE = new SimpleTier(
             BlockTags.INCORRECT_FOR_IRON_TOOL, 250, 6.0F, 2.0F, 14,
-            () -> Ingredient.of(ModBlocks.COMPRESSED_COBBLESTONE.get()));
+            () -> Ingredient.of(ModBlocks.byLevel(1).get()));
 }

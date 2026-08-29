@@ -2,6 +2,7 @@ package net.fahr3n.unnecessarilycompressedcobblestone.datagen;
 
 import java.util.stream.Stream;
 
+import net.fahr3n.unnecessarilycompressedcobblestone.block.ModBlocks;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
 import net.minecraft.core.HolderLookup;
@@ -12,7 +13,12 @@ import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.storage.loot.functions.EnchantedCountIncreaseFunction;
+import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.functions.SmeltItemFunction;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 /** Death loot for this mod's entities, the same way {@link ModBlockLootTableProvider} handles blocks. */
 public class ModEntityLootTableProvider extends EntityLootSubProvider {
@@ -25,7 +31,44 @@ public class ModEntityLootTableProvider extends EntityLootSubProvider {
         add(ModEntities.COMPRESSED_GOLEM.get(), LootTable.lootTable()
                 .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(13))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F))))
                         .add(LootItem.lootTableItem(ModItems.TIER_1_COMPRESSED_HEART.get()))));
+
+        // Back the gunpowder that went into calling it up, plus the stone it was packed out of.
+        // Both pools take Looting, which adds up to one extra of each per level.
+        add(ModEntities.COMPRESSED_CREEPER.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(Items.GUNPOWDER)
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(4.0F, 8.0F)))))
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(27))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                // The heart itself is always exactly one, the way the golem gives up its tier 1.
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.TIER_2_COMPRESSED_HEART.get()))));
+
+        // A chicken's own drops: feathers, and meat that comes out cooked if it burned to death.
+        add(ModEntities.COMPRESSED_COBBLESTONE_CHICKEN.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(Items.FEATHER)
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0F, 2.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(Items.CHICKEN)
+                                .apply(SmeltItemFunction.smelted().when(this.shouldSmeltLoot()))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F))))));
     }
 
     /**
@@ -48,4 +91,6 @@ public class ModEntityLootTableProvider extends EntityLootSubProvider {
     protected boolean canHaveLootTable(EntityType<?> entityType) {
         return entityType == ModEntities.COMPRESSED_GOLEM.get() || super.canHaveLootTable(entityType);
     }
+
+    /** The primed TNT is MISC and drops nothing, which the default already handles. */
 }

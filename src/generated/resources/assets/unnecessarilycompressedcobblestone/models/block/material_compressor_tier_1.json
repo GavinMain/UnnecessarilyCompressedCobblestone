@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "down": "unnecessarilycompressedcobblestone:block/material_compressor_tier_1_bottom",
+    "east": "unnecessarilycompressedcobblestone:block/material_compressor_tier_1_side",
+    "north": "unnecessarilycompressedcobblestone:block/material_compressor_tier_1_output",
+    "particle": "unnecessarilycompressedcobblestone:block/material_compressor_tier_1_side",
+    "south": "unnecessarilycompressedcobblestone:block/material_compressor_tier_1_input",
+    "up": "unnecessarilycompressedcobblestone:block/material_compressor_tier_1_top",
+    "west": "unnecessarilycompressedcobblestone:block/material_compressor_tier_1_side"
+  }
+}

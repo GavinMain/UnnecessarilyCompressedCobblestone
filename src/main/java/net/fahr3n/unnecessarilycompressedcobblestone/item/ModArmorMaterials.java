@@ -32,9 +32,30 @@ public class ModArmorMaterials {
                     }),
                     9,
                     SoundEvents.ARMOR_EQUIP_IRON,
-                    () -> Ingredient.of(ModBlocks.COMPRESSED_COBBLESTONE.get()),
+                    () -> Ingredient.of(ModBlocks.byLevel(1).get()),
                     List.of(new ArmorMaterial.Layer(
                             ResourceLocation.fromNamespaceAndPath(UnnecessarilyCompressedCobblestone.MOD_ID, "compressed_cobblestone"))),
+                    0F, 0F));
+
+    /**
+     * Iron's protection values, iron's enchantability and toughness. The set is not meant to
+     * out-armour the plain compressed set - what it is for is the step height and the jump, which
+     * live in {@code ModEvents} and only apply when all four pieces are worn.
+     */
+    public static final Holder<ArmorMaterial> COMPRESSION_JUMP_ARMOR_MATERIAL = ARMOR_MATERIALS.register(
+            "compression_jump", () -> new ArmorMaterial(
+                    Util.make(new EnumMap<>(ArmorItem.Type.class), map -> {
+                        map.put(ArmorItem.Type.BOOTS, 2);
+                        map.put(ArmorItem.Type.LEGGINGS, 5);
+                        map.put(ArmorItem.Type.CHESTPLATE, 6);
+                        map.put(ArmorItem.Type.HELMET, 2);
+                        map.put(ArmorItem.Type.BODY, 5);
+                    }),
+                    9,
+                    SoundEvents.ARMOR_EQUIP_IRON,
+                    () -> Ingredient.of(ModBlocks.byLevel(20).get()),
+                    List.of(new ArmorMaterial.Layer(
+                            ResourceLocation.fromNamespaceAndPath(UnnecessarilyCompressedCobblestone.MOD_ID, "compression_jump"))),
                     0F, 0F));
 
     public static void register(IEventBus eventBus) {

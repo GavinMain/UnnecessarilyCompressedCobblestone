@@ -58,14 +58,45 @@ public class ModItemTagProvider extends ItemTagsProvider {
         // crossbow and dispenser will fire it.
         tag(ItemTags.ARROWS).add(ModItems.COMPRESSED_COBBLESTONE_ARROW.get());
 
-        // What the Compression Inscriber will pour energy into.
-        tag(ModTags.Items.INSCRIBABLE).add(
+        // The mace is listed item by item in each of these the same way vanilla lists its own:
+        // #minecraft:enchantable/weapon is what Compression itself hangs off, /mace is Density,
+        // Breach and Wind Burst, /fire_aspect is Fire Aspect and /durability is Unbreaking and
+        // Mending. NeoForge's #c:tools/melee_weapon is the same list for other mods.
+        tag(ItemTags.WEAPON_ENCHANTABLE).add(ModItems.COMPRESSED_COBBLESTONE_MACE.get());
+        tag(ItemTags.MACE_ENCHANTABLE).add(ModItems.COMPRESSED_COBBLESTONE_MACE.get());
+        tag(ItemTags.FIRE_ASPECT_ENCHANTABLE).add(ModItems.COMPRESSED_COBBLESTONE_MACE.get());
+        tag(ItemTags.DURABILITY_ENCHANTABLE).add(ModItems.COMPRESSED_COBBLESTONE_MACE.get());
+        tag(Tags.Items.MELEE_WEAPON_TOOLS).add(ModItems.COMPRESSED_COBBLESTONE_MACE.get());
+
+        // The Compression Jump set is armour like any other, so it goes in the same four vanilla
+        // tags the plain set does and picks up the same enchantments and trims.
+        tag(ItemTags.HEAD_ARMOR).add(ModItems.COMPRESSION_JUMP_HELMET.get());
+        tag(ItemTags.CHEST_ARMOR).add(ModItems.COMPRESSION_JUMP_CHESTPLATE.get());
+        tag(ItemTags.LEG_ARMOR).add(ModItems.COMPRESSION_JUMP_LEGGINGS.get());
+        tag(ItemTags.FOOT_ARMOR).add(ModItems.COMPRESSION_JUMP_BOOTS.get());
+
+        // What the inscriber turns into max health.
+        tag(ModTags.Items.COMPRESSION_ARMOR).add(
                 ModItems.COMPRESSED_COBBLESTONE_HELMET.get(),
                 ModItems.COMPRESSED_COBBLESTONE_CHESTPLATE.get(),
                 ModItems.COMPRESSED_COBBLESTONE_LEGGINGS.get(),
                 ModItems.COMPRESSED_COBBLESTONE_BOOTS.get(),
+                ModItems.COMPRESSION_JUMP_HELMET.get(),
+                ModItems.COMPRESSION_JUMP_CHESTPLATE.get(),
+                ModItems.COMPRESSION_JUMP_LEGGINGS.get(),
+                ModItems.COMPRESSION_JUMP_BOOTS.get());
+
+        // What the inscriber turns into attack damage.
+        tag(ModTags.Items.COMPRESSION_MELEE_WEAPON).add(
                 ModItems.COMPRESSED_COBBLESTONE_SWORD.get(),
-                ModItems.COMPRESSED_COBBLESTONE_BOW.get(),
-                ModItems.COMPRESSED_COBBLESTONE_ARROW.get());
+                ModItems.COMPRESSED_COBBLESTONE_MACE.get());
+
+        // What the Compression Inscriber will pour energy into: the two tags above, plus the ranged
+        // gear, which earns arrow velocity rather than a stat and so has no tag of its own.
+        tag(ModTags.Items.INSCRIBABLE)
+                .addTag(ModTags.Items.COMPRESSION_ARMOR)
+                .addTag(ModTags.Items.COMPRESSION_MELEE_WEAPON)
+                .add(ModItems.COMPRESSED_COBBLESTONE_BOW.get(),
+                        ModItems.COMPRESSED_COBBLESTONE_ARROW.get());
     }
 }

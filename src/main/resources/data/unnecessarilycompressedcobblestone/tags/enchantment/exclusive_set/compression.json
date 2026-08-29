@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "unnecessarilycompressedcobblestone:compression",
+    "unnecessarilycompressedcobblestone:super_compression",
+    "unnecessarilycompressedcobblestone:hyper_compression",
+    "unnecessarilycompressedcobblestone:giga_compression"
+  ]
+}

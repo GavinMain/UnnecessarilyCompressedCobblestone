@@ -2,11 +2,15 @@ package net.fahr3n.unnecessarilycompressedcobblestone;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.client.CompressedCobblestoneArrowRenderer;
+import net.fahr3n.unnecessarilycompressedcobblestone.entity.client.CompressedCobblestoneChickenRenderer;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.client.CompressedGolemRenderer;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.ModMenuTypes;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.CompressionInscriberScreen;
+import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.MaterialCompressorScreen;
 import net.fahr3n.unnecessarilycompressedcobblestone.util.ModItemProperties;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.CreeperRenderer;
+import net.minecraft.client.renderer.entity.TntRenderer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -43,10 +47,21 @@ public class UCCClient {
     static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.COMPRESSED_COBBLESTONE_ARROW.get(), CompressedCobblestoneArrowRenderer::new);
         event.registerEntityRenderer(ModEntities.COMPRESSED_GOLEM.get(), CompressedGolemRenderer::new);
+
+        // A vanilla creeper in every respect the renderer cares about; the wind-up it draws comes
+        // from the entity's own getSwelling override.
+        event.registerEntityRenderer(ModEntities.COMPRESSED_CREEPER.get(), CreeperRenderer::new);
+        event.registerEntityRenderer(ModEntities.COMPRESSED_COBBLESTONE_CHICKEN.get(),
+                CompressedCobblestoneChickenRenderer::new);
+
+        // TntRenderer draws whichever block state the primed entity is carrying, so both
+        // Compressed TNTs render as themselves with no renderer of our own.
+        event.registerEntityRenderer(ModEntities.COMPRESSED_PRIMED_TNT.get(), TntRenderer::new);
     }
 
     @SubscribeEvent
     static void registerMenuScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenuTypes.COMPRESSION_INSCRIBER_MENU.get(), CompressionInscriberScreen::new);
+        event.register(ModMenuTypes.MATERIAL_COMPRESSOR_MENU.get(), MaterialCompressorScreen::new);
     }
 }

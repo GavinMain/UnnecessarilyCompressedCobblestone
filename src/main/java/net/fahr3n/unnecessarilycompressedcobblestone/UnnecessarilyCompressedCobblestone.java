@@ -12,6 +12,7 @@ import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModArmorMaterials;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModCreativeModeTabs;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
+import net.fahr3n.unnecessarilycompressedcobblestone.potion.ModPotions;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.ModMenuTypes;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -46,6 +47,7 @@ public class UnnecessarilyCompressedCobblestone {
         ModBlocks.register(modEventBus);
         ModArmorMaterials.register(modEventBus);
         ModEnchantmentEffects.register(modEventBus);
+        ModPotions.register(modEventBus);
         ModEntities.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModDataComponents.register(modEventBus);

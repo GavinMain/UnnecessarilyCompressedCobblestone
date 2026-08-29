@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "unnecessarilycompressedcobblestone:compressed_cobblestone_21"
+    }
+  },
+  "pattern": [
+    "C C",
+    "CCC",
+    "CCC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "unnecessarilycompressedcobblestone:compression_jump_chestplate"
+  }
+}

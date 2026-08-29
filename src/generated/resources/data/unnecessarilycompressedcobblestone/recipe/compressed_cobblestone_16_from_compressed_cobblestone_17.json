@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "ingredients": [
+    {
+      "item": "unnecessarilycompressedcobblestone:compressed_cobblestone_17"
+    }
+  ],
+  "result": {
+    "count": 9,
+    "id": "unnecessarilycompressedcobblestone:compressed_cobblestone_16"
+  }
+}

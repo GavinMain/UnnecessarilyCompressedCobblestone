@@ -34,6 +34,32 @@ public class ModBlockStateProvider extends BlockStateProvider {
         var inscriberModel = models().cubeBottomTop(inscriber, modLoc("block/" + inscriber + "_side"),
                 modLoc("block/" + inscriber + "_side"), modLoc("block/" + inscriber + "_top"));
         simpleBlockWithItem(ModBlocks.COMPRESSION_INSCRIBER.get(), inscriberModel);
+
+        // Every face of the compressor says what it does: coal goes in the top and the back, blocks
+        // come out of the bottom and the front, and the two remaining sides are plain casing.
+        // horizontalBlock turns the model so the north face is the one FACING points along, which
+        // is the output - the same face the block entity hands its output handler to.
+        // Every TNT is laid out the way vanilla's is: a banded side, a marked top, a plain bottom.
+        ModBlocks.TNTS.forEach(this::tnt);
+
+        String compressor = ModBlocks.MATERIAL_COMPRESSOR_TIER_1.getId().getPath();
+        var compressorModel = models().cube(compressor,
+                modLoc("block/" + compressor + "_bottom"),
+                modLoc("block/" + compressor + "_top"),
+                modLoc("block/" + compressor + "_output"),
+                modLoc("block/" + compressor + "_input"),
+                modLoc("block/" + compressor + "_side"),
+                modLoc("block/" + compressor + "_side"))
+                .texture("particle", modLoc("block/" + compressor + "_side"));
+        horizontalBlock(ModBlocks.MATERIAL_COMPRESSOR_TIER_1.get(), compressorModel);
+        simpleBlockItem(ModBlocks.MATERIAL_COMPRESSOR_TIER_1.get(), compressorModel);
+    }
+
+    private void tnt(DeferredBlock<?> deferredBlock) {
+        String name = deferredBlock.getId().getPath();
+        var model = models().cubeBottomTop(name, modLoc("block/" + name + "_side"),
+                modLoc("block/" + name + "_bottom"), modLoc("block/" + name + "_top"));
+        simpleBlockWithItem(deferredBlock.get(), model);
     }
 
     private void blockWithItem(DeferredBlock<?> deferredBlock) {

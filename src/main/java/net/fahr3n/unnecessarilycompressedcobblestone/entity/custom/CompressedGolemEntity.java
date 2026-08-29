@@ -1,15 +1,17 @@
 package net.fahr3n.unnecessarilycompressedcobblestone.entity.custom;
 
+import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.animal.IronGolem;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.level.Level;
 
 /**
@@ -43,22 +45,28 @@ public class CompressedGolemEntity extends IronGolem {
     }
 
     /**
-     * The iron golem's goals, plus one: it hunts players on sight instead of waiting to be angered.
-     * The vanilla player goal is kept as well - it costs nothing and still handles being provoked.
+     * The iron golem's goals, plus one that makes this golem hostile to the whole world: it hunts
+     * any living thing on sight rather than waiting to be angered, and the only thing it will not
+     * pick as a target is another Compressed Golem.
+     * <p>
+     * The vanilla goals are kept as well - they cost nothing and still handle being provoked.
      */
     @Override
     protected void registerGoals() {
         super.registerGoals();
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false,
+                target -> !(target instanceof CompressedGolemEntity) && !(target instanceof ArmorStand)));
     }
 
     /**
-     * An iron golem refuses to attack players when it was built by one. This golem is hostile to
-     * everyone who built it included, so only vanilla's creeper exception is kept.
+     * Hostile to everything, including whoever built it and including creepers, which an iron golem
+     * would leave alone. Two exceptions: its own kind, so a pack of these does not turn on itself
+     * the moment it runs out of anything else to hit, and armour stands, which are living entities
+     * as far as the targeting code is concerned but are furniture as far as anyone else is.
      */
     @Override
     public boolean canAttackType(EntityType<?> type) {
-        return type != EntityType.CREEPER;
+        return type != ModEntities.COMPRESSED_GOLEM.get() && type != EntityType.ARMOR_STAND;
     }
 
     /* BOSS BAR */

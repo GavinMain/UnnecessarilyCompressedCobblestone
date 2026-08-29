@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_compressed_cobblestone_153": {
+      "conditions": {
+        "items": [
+          {
+            "items": "unnecessarilycompressedcobblestone:compressed_cobblestone_153"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "unnecessarilycompressedcobblestone:hyper_compression_book_4"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_compressed_cobblestone_153"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "unnecessarilycompressedcobblestone:hyper_compression_book_4"
+    ]
+  }
+}

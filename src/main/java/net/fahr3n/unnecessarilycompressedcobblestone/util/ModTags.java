@@ -18,8 +18,18 @@ public class ModTags {
     }
 
     public static class Items {
-        /** Gear the Compression Inscriber will pour energy into. */
+        /**
+         * Gear the Compression Inscriber will pour energy into. It is built out of the tags below
+         * rather than listing items, so a new piece of gear only has to join the tag that says what
+         * kind of thing it is and the inscriber picks it up with no further change.
+         */
         public static final TagKey<Item> INSCRIBABLE = createTag("inscribable");
+
+        /** Armour that turns its Compression Energy into max health, one heart point per digit. */
+        public static final TagKey<Item> COMPRESSION_ARMOR = createTag("compression_armor");
+
+        /** Weapons that turn their Compression Energy into attack damage, one point per digit. */
+        public static final TagKey<Item> COMPRESSION_MELEE_WEAPON = createTag("compression_melee_weapon");
 
         private static TagKey<Item> createTag(String name) {
             return ItemTags.create(ResourceLocation.fromNamespaceAndPath(UnnecessarilyCompressedCobblestone.MOD_ID, name));

@@ -2,13 +2,19 @@ package net.fahr3n.unnecessarilycompressedcobblestone.item;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.CompressedCobblestoneArmorItem;
+import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.CompressedCobblestoneArrowItem;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.CompressedCobblestoneBowItem;
+import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.CompressedCobblestoneMaceItem;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.CompressedCobblestoneSwordItem;
+import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.CompressionJumpArmorItem;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.MaceItem;
 import net.minecraft.world.item.SwordItem;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -53,9 +59,53 @@ public class ModItems {
                     ModToolTiers.COMPRESSED_COBBLESTONE, new Item.Properties()
                             .attributes(SwordItem.createAttributes(ModToolTiers.COMPRESSED_COBBLESTONE, 3, -2.4F))));
 
+    /**
+     * The Compression Jump set. The pieces are ordinary iron-strength armour on their own; wearing
+     * all four is what buys the step height and the jump, which {@code ModEvents} applies.
+     */
+    public static final DeferredItem<CompressionJumpArmorItem> COMPRESSION_JUMP_HELMET =
+            ITEMS.register("compression_jump_helmet", () -> new CompressionJumpArmorItem(
+                    ModArmorMaterials.COMPRESSION_JUMP_ARMOR_MATERIAL, ArmorItem.Type.HELMET,
+                    armorProperties(ArmorItem.Type.HELMET)));
+
+    public static final DeferredItem<CompressionJumpArmorItem> COMPRESSION_JUMP_CHESTPLATE =
+            ITEMS.register("compression_jump_chestplate", () -> new CompressionJumpArmorItem(
+                    ModArmorMaterials.COMPRESSION_JUMP_ARMOR_MATERIAL, ArmorItem.Type.CHESTPLATE,
+                    armorProperties(ArmorItem.Type.CHESTPLATE)));
+
+    public static final DeferredItem<CompressionJumpArmorItem> COMPRESSION_JUMP_LEGGINGS =
+            ITEMS.register("compression_jump_leggings", () -> new CompressionJumpArmorItem(
+                    ModArmorMaterials.COMPRESSION_JUMP_ARMOR_MATERIAL, ArmorItem.Type.LEGGINGS,
+                    armorProperties(ArmorItem.Type.LEGGINGS)));
+
+    public static final DeferredItem<CompressionJumpArmorItem> COMPRESSION_JUMP_BOOTS =
+            ITEMS.register("compression_jump_boots", () -> new CompressionJumpArmorItem(
+                    ModArmorMaterials.COMPRESSION_JUMP_ARMOR_MATERIAL, ArmorItem.Type.BOOTS,
+                    armorProperties(ArmorItem.Type.BOOTS)));
+
+    /**
+     * Vanilla mace numbers - 5 attack damage, -3.4 attack speed, the 500 durability it never
+     * spends - so the smash attack scales off fall distance exactly as it does on the real thing.
+     * It is not {@code Rarity.EPIC}, since this one is crafted rather than pulled out of a vault.
+     */
+    public static final DeferredItem<CompressedCobblestoneMaceItem> COMPRESSED_COBBLESTONE_MACE =
+            ITEMS.register("compressed_cobblestone_mace", () -> new CompressedCobblestoneMaceItem(
+                    new Item.Properties().durability(500)
+                            .component(DataComponents.TOOL, MaceItem.createToolProperties())
+                            .attributes(MaceItem.createAttributes())));
+
+    /** Creeper green over compressed grey. The only way to call the boss up. */
+    public static final DeferredItem<DeferredSpawnEggItem> COMPRESSED_CREEPER_SPAWN_EGG =
+            ITEMS.register("compressed_creeper_spawn_egg", () -> new DeferredSpawnEggItem(
+                    ModEntities.COMPRESSED_CREEPER, 0x0DA70B, 0x5B5B5B, new Item.Properties()));
+
     /** What a Compressed Golem leaves behind. Just an item for now. */
     public static final DeferredItem<Item> TIER_1_COMPRESSED_HEART =
             ITEMS.register("tier_1_compressed_heart", () -> new Item(new Item.Properties()));
+
+    /** The same, out of a Compressed Creeper. Also just an item for now. */
+    public static final DeferredItem<Item> TIER_2_COMPRESSED_HEART =
+            ITEMS.register("tier_2_compressed_heart", () -> new Item(new Item.Properties()));
 
     public static final DeferredItem<Item> COMPRESSED_COBBLESTONE_APPLE =
             ITEMS.register("compressed_cobblestone_apple", () -> new Item(

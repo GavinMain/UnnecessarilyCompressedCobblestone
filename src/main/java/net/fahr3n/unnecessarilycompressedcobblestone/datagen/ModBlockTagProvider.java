@@ -28,5 +28,8 @@ public class ModBlockTagProvider extends BlockTagsProvider {
             pickaxe.add(block.get());
             stoneTool.add(block.get());
         }
+
+        pickaxe.add(ModBlocks.MATERIAL_COMPRESSOR_TIER_1.get());
+        stoneTool.add(ModBlocks.MATERIAL_COMPRESSOR_TIER_1.get());
     }
 }

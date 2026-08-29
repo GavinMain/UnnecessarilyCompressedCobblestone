@@ -17,6 +17,10 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("compression_inscriber_be", () -> BlockEntityType.Builder.of(
                     CompressionInscriberBlockEntity::new, ModBlocks.COMPRESSION_INSCRIBER.get()).build(null));
 
+    public static final Supplier<BlockEntityType<MaterialCompressorBlockEntity>> MATERIAL_COMPRESSOR_TIER_1_BE =
+            BLOCK_ENTITIES.register("material_compressor_tier_1_be", () -> BlockEntityType.Builder.of(
+                    MaterialCompressorBlockEntity::new, ModBlocks.MATERIAL_COMPRESSOR_TIER_1.get()).build(null));
+
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);
     }

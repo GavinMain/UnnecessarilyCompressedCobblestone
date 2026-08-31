@@ -19,4 +19,13 @@ public class ModToolTiers {
     public static final Tier COMPRESSED_COBBLESTONE = new SimpleTier(
             BlockTags.INCORRECT_FOR_IRON_TOOL, 250, 6.0F, 2.0F, 14,
             () -> Ingredient.of(ModBlocks.byLevel(1).get()));
+
+    /**
+     * Netherite-equivalent, and repaired with the stone it is made of. It is the tier of the one
+     * pickaxe that gets into the hardened levels, so it has to out-harvest everything vanilla has;
+     * the mining speed is only its starting point, since Compression Energy adds to it.
+     */
+    public static final Tier HARDENED_COMPRESSED_COBBLESTONE = new SimpleTier(
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 2031, 9.0F, 4.0F, 15,
+            () -> Ingredient.of(ModBlocks.byLevel(ModBlocks.HARDENED_LEVEL).get()));
 }

@@ -1,0 +1,32 @@
+{
+  "values": [
+    "minecraft:tnt",
+    "unnecessarilycompressedcobblestone:compressed_tnt",
+    "unnecessarilycompressedcobblestone:super_compressed_tnt",
+    "unnecessarilycompressedcobblestone:flower_tnt",
+    "unnecessarilycompressedcobblestone:guardian_tnt",
+    "unnecessarilycompressedcobblestone:chunk_tnt",
+    "unnecessarilycompressedcobblestone:glass_tnt",
+    "unnecessarilycompressedcobblestone:chicken_tnt",
+    "unnecessarilycompressedcobblestone:golem_tnt",
+    "unnecessarilycompressedcobblestone:apple_tnt",
+    "unnecessarilycompressedcobblestone:random_tnt",
+    "unnecessarilycompressedcobblestone:trident_enchant_tnt",
+    "unnecessarilycompressedcobblestone:binding_tnt",
+    "unnecessarilycompressedcobblestone:glass_tnt_tier_2",
+    "unnecessarilycompressedcobblestone:anvil_tnt",
+    "unnecessarilycompressedcobblestone:levitation_tnt",
+    "unnecessarilycompressedcobblestone:chicken_tnt_tier_2",
+    "unnecessarilycompressedcobblestone:lightning_song_tnt",
+    "unnecessarilycompressedcobblestone:treent_tnt",
+    "unnecessarilycompressedcobblestone:arrow_tnt",
+    "unnecessarilycompressedcobblestone:breeding_tnt",
+    "unnecessarilycompressedcobblestone:effect_tnt",
+    "unnecessarilycompressedcobblestone:arrow_spiral_tnt",
+    "unnecessarilycompressedcobblestone:flash_tnt",
+    {
+      "id": "#c:tnt",
+      "required": false
+    }
+  ]
+}

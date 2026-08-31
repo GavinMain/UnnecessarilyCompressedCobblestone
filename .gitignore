@@ -43,3 +43,9 @@ repo/
 CLAUDE.md
 TEXTURE.md
 .env
+
+### Texture generation (local tooling, generated state and logs) ###
+.texturegen/
+
+### Local suggestion scratch ###
+SUGGESTIONS.md

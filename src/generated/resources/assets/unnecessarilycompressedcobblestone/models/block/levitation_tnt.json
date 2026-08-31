@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "unnecessarilycompressedcobblestone:block/levitation_tnt_bottom",
+    "side": "unnecessarilycompressedcobblestone:block/levitation_tnt_side",
+    "top": "unnecessarilycompressedcobblestone:block/levitation_tnt_top"
+  }
+}

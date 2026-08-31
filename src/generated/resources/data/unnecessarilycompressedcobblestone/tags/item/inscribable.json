@@ -3,6 +3,12 @@
     "#unnecessarilycompressedcobblestone:compression_armor",
     "#unnecessarilycompressedcobblestone:compression_melee_weapon",
     "unnecessarilycompressedcobblestone:compressed_cobblestone_bow",
-    "unnecessarilycompressedcobblestone:compressed_cobblestone_arrow"
+    "unnecessarilycompressedcobblestone:compressed_cobblestone_arrow",
+    "unnecessarilycompressedcobblestone:super_compressed_arrow",
+    "unnecessarilycompressedcobblestone:compressed_lightning_staff",
+    "unnecessarilycompressedcobblestone:compressed_arrow_staff",
+    "unnecessarilycompressedcobblestone:compressed_arrow_tnt_staff",
+    "unnecessarilycompressedcobblestone:compressed_summoning_staff",
+    "unnecessarilycompressedcobblestone:compressed_cobblestone_pickaxe"
   ]
 }

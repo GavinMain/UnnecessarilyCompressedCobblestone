@@ -24,6 +24,92 @@ public class ModEnchantments {
     public static final ResourceKey<Enchantment> HYPER_COMPRESSION = key("hyper_compression");
     public static final ResourceKey<Enchantment> GIGA_COMPRESSION = key("giga_compression");
 
+    /** How many times a second a staff's cast goes off: the level itself, not one plus it. */
+    public static final ResourceKey<Enchantment> MULTICAST = key("multicast");
+
+    /**
+     * Ten percent more of whatever a staff's power is, per level, compounded - lightning damage on
+     * one staff, arrow speed on the other.
+     */
+    public static final ResourceKey<Enchantment> SURGE = key("surge");
+
+    /** A tenth off the cast per level, to a floor of thirty percent of it. */
+    public static final ResourceKey<Enchantment> SILENT_CAST = key("silent_cast");
+
+    /**
+     * The staff's three enchantments and the highest level the enchanting table hands out for each.
+     * That number is also each one's registered max level, which is what makes the cap absolute:
+     * neither the table nor the anvil will climb past a registered maximum.
+     */
+    public static final List<StaffEnchantment> STAFF_ENCHANTMENTS = List.of(
+            // Levels 1-2 from the table, 3-5 from a book: one more activation a second each time.
+            new StaffEnchantment(MULTICAST, 2, 4, new int[] {55, 89, 117}),
+            // Levels 1-5 from the table, 6-10 from a book: ten percent more power each, compounded.
+            new StaffEnchantment(SURGE, 5, 6, new int[] {52, 62, 82, 94, 101}),
+            // Levels 1-4 from the table, 5-7 from a book. Seven is seventy percent off, which is the
+            // floor a staff clamps at, so it is the last rung there is any point in.
+            new StaffEnchantment(SILENT_CAST, 4, 4, new int[] {54, 77, 95}));
+
+    /**
+     * One of the staff's enchantments: how far the enchanting table gets on its own, and the
+     * compressed cobblestone tier each book above that is wrapped around. The enchantment is
+     * registered at the table cap, so neither the table nor the anvil ever climbs to a crafted rung -
+     * the only way up is the book, exactly as it is for the Compression family. Book tiers must stay
+     * disjoint from every other book's, since the one {@link #BOOK_PATTERN} grid means the tier is
+     * all that tells two books apart.
+     *
+     * @param key           the enchantment itself
+     * @param tableMaxLevel the deepest level the table and the vanilla anvil reach
+     * @param weight        how often the table offers it against everything else it could
+     * @param bookTiers     the block tier each book from {@link #firstCraftedLevel()} upwards uses
+     */
+    public record StaffEnchantment(ResourceKey<Enchantment> key, int tableMaxLevel, int weight, int[] bookTiers) {
+        /** The lowest level that has a book recipe: the first one past the table. */
+        public int firstCraftedLevel() {
+            return this.tableMaxLevel + 1;
+        }
+
+        /** The deepest level this enchantment goes to, which is the last book there is a recipe for. */
+        public int maxLevel() {
+            return this.tableMaxLevel + this.bookTiers.length;
+        }
+
+        /** The compressed cobblestone tier the book for {@code level} is crafted from. */
+        public int bookTier(int level) {
+            return this.bookTiers[level - firstCraftedLevel()];
+        }
+    }
+
+    /** The staff rung {@code holder} belongs to, or null if it is not one of the staff's own. */
+    public static StaffEnchantment staff(Holder<Enchantment> holder) {
+        for (StaffEnchantment staff : STAFF_ENCHANTMENTS) {
+            if (holder.is(staff.key())) {
+                return staff;
+            }
+        }
+
+        return null;
+    }
+
+    /** Whether this enchantment has levels that only a crafted book can produce. */
+    public static boolean hasCraftedLevels(Holder<Enchantment> holder) {
+        return family(holder) != null || staff(holder) != null;
+    }
+
+    /**
+     * Whether {@code level} of {@code holder} is one of those crafted levels - the test the anvil
+     * needs, since a crafted level must neither be clamped away nor combined up to.
+     */
+    public static boolean isCraftedLevel(Holder<Enchantment> holder, int level) {
+        Family family = family(holder);
+        if (family != null) {
+            return family.isCrafted(level);
+        }
+
+        StaffEnchantment staff = staff(holder);
+        return staff != null && level > staff.tableMaxLevel();
+    }
+
     /**
      * The four Compression enchantments are variations on one another, so a weapon only ever
      * carries one of them. The tag is hand-written under {@code data/.../tags/enchantment/}, the way
@@ -105,7 +191,7 @@ public class ModEnchantments {
                     new int[] {6, 10, 14, 19, 24, 29, 33}),
             // Ten tiers a level: Super Compression IV drops four tier 40 blocks.
             new Family(SUPER_COMPRESSION, 10, 0, 1,
-                    new int[] {38, 46, 53, 63, 70, 78, 86, 96, 106, 114, 122}),
+                    new int[] {38, 46, 53, 63, 74, 78, 86, 96, 106, 114, 122}),
             // Twenty tiers a level: Hyper Compression IV drops four tier 80 blocks.
             new Family(HYPER_COMPRESSION, 20, 0, 1,
                     new int[] {129, 137, 145, 153, 159, 170, 177, 189, 195, 204, 214, 221}),
@@ -123,6 +209,13 @@ public class ModEnchantments {
 
         return null;
     }
+
+    /**
+     * What the staff's enchantments go on. It is a tag rather than the item itself so that a second
+     * staff, or another mod's, can join them by joining the tag.
+     */
+    public static final TagKey<Item> STAFF_ENCHANTABLE = ItemTags.create(
+            ResourceLocation.fromNamespaceAndPath(UnnecessarilyCompressedCobblestone.MOD_ID, "enchantable/staff"));
 
     public static void bootstrap(BootstrapContext<Enchantment> context) {
         HolderGetter<Item> items = context.lookup(Registries.ITEM);
@@ -144,6 +237,22 @@ public class ModEnchantments {
                     .exclusiveWith(enchantments.getOrThrow(EXCLUSIVE_SET_COMPRESSION))
                     .withEffect(EnchantmentEffectComponents.POST_ATTACK, EnchantmentTarget.ATTACKER,
                             EnchantmentTarget.VICTIM, new CompressionEnchantmentEffect(family.tierPerLevel())));
+        }
+
+        // The staff's own three. They carry no effect components at all: what each of them does is
+        // read off the level by the staff itself at the moment of the cast, because none of them -
+        // an extra bolt, a multiplied bolt, a shorter cast - is a thing vanilla's effect components
+        // can describe.
+        for (StaffEnchantment staff : STAFF_ENCHANTMENTS) {
+            register(context, staff.key(), Enchantment.enchantment(Enchantment.definition(
+                    items.getOrThrow(STAFF_ENCHANTABLE),
+                    items.getOrThrow(STAFF_ENCHANTABLE),
+                    staff.weight(),
+                    staff.tableMaxLevel(),
+                    Enchantment.dynamicCost(8, 10),
+                    Enchantment.dynamicCost(40, 10),
+                    2,
+                    EquipmentSlotGroup.MAINHAND)));
         }
     }
 

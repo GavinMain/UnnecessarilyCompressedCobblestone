@@ -1,11 +1,11 @@
 {
   "parent": "minecraft:recipes/root",
   "criteria": {
-    "has_compressed_cobblestone_70": {
+    "has_compressed_cobblestone_74": {
       "conditions": {
         "items": [
           {
-            "items": "unnecessarilycompressedcobblestone:compressed_cobblestone_70"
+            "items": "unnecessarilycompressedcobblestone:compressed_cobblestone_74"
           }
         ]
       },
@@ -21,7 +21,7 @@
   "requirements": [
     [
       "has_the_recipe",
-      "has_compressed_cobblestone_70"
+      "has_compressed_cobblestone_74"
     ]
   ],
   "rewards": {

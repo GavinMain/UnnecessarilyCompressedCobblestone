@@ -152,6 +152,20 @@ public class CompressedCreeperEntity extends Creeper {
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
     }
 
+    /**
+     * Whatever called it up is not something it will fight.
+     * <p>
+     * Alliance is vanilla's own faction check - the evoker uses exactly this to keep its vexes off
+     * it - and {@code TargetingConditions} consults it before any acquisition in combat, so this
+     * covers the hunting goal and the retaliation goal in one, without either of them needing to
+     * know the Summoner exists. It says nothing about damage: a summoner standing inside its own
+     * flock's blast still takes it.
+     */
+    @Override
+    public boolean isAlliedTo(Entity entity) {
+        return entity instanceof CompressedSummonerEntity || super.isAlliedTo(entity);
+    }
+
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);

@@ -255,6 +255,10 @@
     "unnecessarilycompressedcobblestone:compressed_cobblestone_253",
     "unnecessarilycompressedcobblestone:compressed_cobblestone_254",
     "unnecessarilycompressedcobblestone:compressed_cobblestone_255",
-    "unnecessarilycompressedcobblestone:material_compressor_tier_1"
+    "unnecessarilycompressedcobblestone:material_compressor_tier_1",
+    "unnecessarilycompressedcobblestone:material_compressor_tier_2",
+    "unnecessarilycompressedcobblestone:material_compressor_tier_3",
+    "unnecessarilycompressedcobblestone:engraving_table",
+    "unnecessarilycompressedcobblestone:lightning_core"
   ]
 }

@@ -1,6 +1,8 @@
 {
   "values": [
     "unnecessarilycompressedcobblestone:compressed_cobblestone_chestplate",
-    "unnecessarilycompressedcobblestone:compression_jump_chestplate"
+    "unnecessarilycompressedcobblestone:compression_jump_chestplate",
+    "unnecessarilycompressedcobblestone:compression_lightning_chestplate",
+    "unnecessarilycompressedcobblestone:compression_arrow_chestplate"
   ]
 }

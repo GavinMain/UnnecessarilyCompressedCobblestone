@@ -1,7 +1,9 @@
 package net.fahr3n.unnecessarilycompressedcobblestone.util;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
+import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.CompressedCobblestoneBowItem;
+import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.CompressedStaffItem;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -10,6 +12,22 @@ import net.minecraft.world.item.Item;
 public class ModItemProperties {
     public static void addCustomItemProperties() {
         makeCustomBow(ModItems.COMPRESSED_COBBLESTONE_BOW.get());
+        makeCustomStaff(ModItems.COMPRESSED_LIGHTNING_STAFF.get());
+        makeCustomStaff(ModItems.COMPRESSED_ARROW_STAFF.get());
+        makeCustomStaff(ModItems.COMPRESSED_ARROW_TNT_STAFF.get());
+        makeCustomStaff(ModItems.COMPRESSED_SUMMONING_STAFF.get());
+    }
+
+    /**
+     * One predicate: whether the cast has finished. The staff swaps to its charged model the moment
+     * it is ready to release and stays there for as long as the button is held, so the texture is
+     * the only thing telling the caster the four seconds are up.
+     */
+    private static void makeCustomStaff(Item item) {
+        ItemProperties.register(item,
+                ResourceLocation.fromNamespaceAndPath(UnnecessarilyCompressedCobblestone.MOD_ID, "cast"),
+                (stack, level, entity, seed) ->
+                        CompressedStaffItem.isCharged(stack, level, entity) ? 1.0F : 0.0F);
     }
 
     /**

@@ -1,0 +1,6 @@
+{
+    "parent": "item/handheld",
+    "textures": {
+        "layer0": "unnecessarilycompressedcobblestone:item/compressed_arrow_staff_charged"
+    }
+}

@@ -35,6 +35,12 @@ public class ModBlockStateProvider extends BlockStateProvider {
                 modLoc("block/" + inscriber + "_side"), modLoc("block/" + inscriber + "_top"));
         simpleBlockWithItem(ModBlocks.COMPRESSION_INSCRIBER.get(), inscriberModel);
 
+        // The Engraving Table is built the same way: a worked top and plain sides.
+        String engravingTable = ModBlocks.ENGRAVING_TABLE.getId().getPath();
+        var engravingTableModel = models().cubeBottomTop(engravingTable, modLoc("block/" + engravingTable + "_side"),
+                modLoc("block/" + engravingTable + "_side"), modLoc("block/" + engravingTable + "_top"));
+        simpleBlockWithItem(ModBlocks.ENGRAVING_TABLE.get(), engravingTableModel);
+
         // Every face of the compressor says what it does: coal goes in the top and the back, blocks
         // come out of the bottom and the front, and the two remaining sides are plain casing.
         // horizontalBlock turns the model so the north face is the one FACING points along, which
@@ -42,17 +48,44 @@ public class ModBlockStateProvider extends BlockStateProvider {
         // Every TNT is laid out the way vanilla's is: a banded side, a marked top, a plain bottom.
         ModBlocks.TNTS.forEach(this::tnt);
 
-        String compressor = ModBlocks.MATERIAL_COMPRESSOR_TIER_1.getId().getPath();
-        var compressorModel = models().cube(compressor,
-                modLoc("block/" + compressor + "_bottom"),
-                modLoc("block/" + compressor + "_top"),
-                modLoc("block/" + compressor + "_output"),
-                modLoc("block/" + compressor + "_input"),
-                modLoc("block/" + compressor + "_side"),
-                modLoc("block/" + compressor + "_side"))
-                .texture("particle", modLoc("block/" + compressor + "_side"));
-        horizontalBlock(ModBlocks.MATERIAL_COMPRESSOR_TIER_1.get(), compressorModel);
-        simpleBlockItem(ModBlocks.MATERIAL_COMPRESSOR_TIER_1.get(), compressorModel);
+        blockWithItem(ModBlocks.LIGHTNING_CORE);
+
+        leaves(ModBlocks.COMPRESSED_COBBLESTONE_LEAVES);
+        sapling(ModBlocks.COMPRESSED_COBBLESTONE_SAPLING);
+
+        compressor(ModBlocks.MATERIAL_COMPRESSOR_TIER_1);
+        compressor(ModBlocks.MATERIAL_COMPRESSOR_TIER_2);
+        compressor(ModBlocks.MATERIAL_COMPRESSOR_TIER_3);
+    }
+
+    /** Leaves are a solid cube drawn with a cutout so the gaps in the texture show through. */
+    private void leaves(DeferredBlock<?> deferredBlock) {
+        String name = deferredBlock.getId().getPath();
+        var model = models().cubeAll(name, modLoc("block/" + name)).renderType("cutout_mipped");
+        simpleBlockWithItem(deferredBlock.get(), model);
+    }
+
+    /** A sapling is two crossed quads, and its item is the flat texture rather than that model. */
+    private void sapling(DeferredBlock<?> deferredBlock) {
+        String name = deferredBlock.getId().getPath();
+        simpleBlock(deferredBlock.get(), models().cross(name, modLoc("block/" + name)).renderType("cutout"));
+        itemModels().withExistingParent(name, mcLoc("item/generated")).texture("layer0", modLoc("block/" + name));
+    }
+
+    /** Five distinct faces: a marked top and bottom, an input face, an output face and two sides. */
+    private void compressor(DeferredBlock<?> deferredBlock) {
+        String name = deferredBlock.getId().getPath();
+        var model = models().cube(name,
+                modLoc("block/" + name + "_bottom"),
+                modLoc("block/" + name + "_top"),
+                modLoc("block/" + name + "_output"),
+                modLoc("block/" + name + "_input"),
+                modLoc("block/" + name + "_side"),
+                modLoc("block/" + name + "_side"))
+                .texture("particle", modLoc("block/" + name + "_side"));
+
+        horizontalBlock(deferredBlock.get(), model);
+        simpleBlockItem(deferredBlock.get(), model);
     }
 
     private void tnt(DeferredBlock<?> deferredBlock) {

@@ -36,19 +36,33 @@ import net.minecraft.world.phys.BlockHitResult;
  * with the output turned towards whoever put it down.
  */
 public class MaterialCompressorBlock extends BaseEntityBlock {
-    public static final MapCodec<MaterialCompressorBlock> CODEC = simpleCodec(MaterialCompressorBlock::new);
-
     /** The way the output face points; the input face is {@code FACING.getOpposite()}. */
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 
-    public MaterialCompressorBlock(Properties properties) {
+    /** What this machine eats and what it makes; every tier is the same block with a different one. */
+    private final CompressorTier tier;
+
+    /**
+     * Built per instance because the tier is part of what this block is, and {@code simpleCodec}
+     * only takes a one-argument constructor. The lambda closes over the parameter rather than the
+     * field so it does not read {@code this} while the object is still being built.
+     */
+    private final MapCodec<MaterialCompressorBlock> codec;
+
+    public MaterialCompressorBlock(Properties properties, CompressorTier tier) {
         super(properties);
+        this.tier = tier;
+        this.codec = simpleCodec(blockProperties -> new MaterialCompressorBlock(blockProperties, tier));
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+    }
+
+    public CompressorTier tier() {
+        return this.tier;
     }
 
     @Override
     protected MapCodec<? extends BaseEntityBlock> codec() {
-        return CODEC;
+        return this.codec;
     }
 
     @Override
@@ -109,7 +123,7 @@ public class MaterialCompressorBlock extends BaseEntityBlock {
             return null;
         }
 
-        return createTickerHelper(blockEntityType, ModBlockEntities.MATERIAL_COMPRESSOR_TIER_1_BE.get(),
+        return createTickerHelper(blockEntityType, ModBlockEntities.MATERIAL_COMPRESSOR_BE.get(),
                 (tickLevel, pos, tickState, blockEntity) -> blockEntity.tick(tickLevel, pos, tickState));
     }
 }

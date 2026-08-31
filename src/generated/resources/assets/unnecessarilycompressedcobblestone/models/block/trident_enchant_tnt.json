@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "unnecessarilycompressedcobblestone:block/trident_enchant_tnt_bottom",
+    "side": "unnecessarilycompressedcobblestone:block/trident_enchant_tnt_side",
+    "top": "unnecessarilycompressedcobblestone:block/trident_enchant_tnt_top"
+  }
+}

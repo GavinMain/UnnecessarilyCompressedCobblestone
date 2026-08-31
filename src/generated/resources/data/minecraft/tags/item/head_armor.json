@@ -1,6 +1,8 @@
 {
   "values": [
     "unnecessarilycompressedcobblestone:compressed_cobblestone_helmet",
-    "unnecessarilycompressedcobblestone:compression_jump_helmet"
+    "unnecessarilycompressedcobblestone:compression_jump_helmet",
+    "unnecessarilycompressedcobblestone:compression_lightning_helmet",
+    "unnecessarilycompressedcobblestone:compression_arrow_helmet"
   ]
 }

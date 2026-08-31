@@ -1,0 +1,14 @@
+{
+    "parent": "item/handheld",
+    "textures": {
+        "layer0": "unnecessarilycompressedcobblestone:item/compressed_arrow_tnt_staff"
+    },
+    "overrides": [
+        {
+            "predicate": {
+                "unnecessarilycompressedcobblestone:cast": 1
+            },
+            "model": "unnecessarilycompressedcobblestone:item/compressed_arrow_tnt_staff_charged"
+        }
+    ]
+}

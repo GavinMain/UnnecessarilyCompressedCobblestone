@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "unnecessarilycompressedcobblestone:block/breeding_tnt_bottom",
+    "side": "unnecessarilycompressedcobblestone:block/breeding_tnt_side",
+    "top": "unnecessarilycompressedcobblestone:block/breeding_tnt_top"
+  }
+}

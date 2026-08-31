@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "unnecessarilycompressedcobblestone:tier_1_compressed_cobblestone_apple"
+    },
+    "C": {
+      "item": "unnecessarilycompressedcobblestone:compressed_cobblestone_35"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "CAC",
+    "CCC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "unnecessarilycompressedcobblestone:tier_2_compressed_cobblestone_apple"
+  }
+}

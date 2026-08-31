@@ -1,6 +1,9 @@
 {
   "replace": false,
   "values": [
-    "unnecessarilycompressedcobblestone:compression"
+    "unnecessarilycompressedcobblestone:compression",
+    "unnecessarilycompressedcobblestone:multicast",
+    "unnecessarilycompressedcobblestone:surge",
+    "unnecessarilycompressedcobblestone:silent_cast"
   ]
 }

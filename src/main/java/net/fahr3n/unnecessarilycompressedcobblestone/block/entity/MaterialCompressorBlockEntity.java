@@ -2,7 +2,9 @@ package net.fahr3n.unnecessarilycompressedcobblestone.block.entity;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
 import net.fahr3n.unnecessarilycompressedcobblestone.block.ModBlocks;
+import net.fahr3n.unnecessarilycompressedcobblestone.block.custom.CompressorTier;
 import net.fahr3n.unnecessarilycompressedcobblestone.block.custom.MaterialCompressorBlock;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.MaterialCompressorMenu;
 import net.minecraft.core.BlockPos;
@@ -21,7 +23,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -29,15 +30,14 @@ import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemStackHandler;
 
 /**
- * Squeezes blocks of coal into deeply compressed cobblestone: one block of coal in, one tier
- * {@link #OUTPUT_LEVEL} block out. The first tier of the machine only knows this one conversion.
+ * Squeezes one block into another: whatever its tier eats goes in, and one block of that tier's
+ * compression level comes out. A machine only ever knows the one conversion its
+ * {@link CompressorTier} describes, and which tier that is comes off the block it is standing in, so
+ * every tier shares this class, its menu and its screen.
  */
 public class MaterialCompressorBlockEntity extends BlockEntity implements MenuProvider {
     public static final int INPUT_SLOT = 0;
     public static final int OUTPUT_SLOT = 1;
-
-    /** What a block of coal is worth here. */
-    public static final int OUTPUT_LEVEL = 16;
 
     /** Ten seconds a block, the same pace the inscriber works at. */
     public static final int MAX_PROGRESS = 200;
@@ -55,7 +55,7 @@ public class MaterialCompressorBlockEntity extends BlockEntity implements MenuPr
         public boolean isItemValid(int slot, ItemStack stack) {
             // Nothing may be put into the output slot from outside - not by a player, not by a
             // pipe. The machine fills it with setStackInSlot, which does not ask.
-            return slot == INPUT_SLOT && stack.is(Items.COAL_BLOCK);
+            return slot == INPUT_SLOT && stack.is(tier().input());
         }
     };
 
@@ -67,7 +67,7 @@ public class MaterialCompressorBlockEntity extends BlockEntity implements MenuPr
     private int progress = 0;
 
     public MaterialCompressorBlockEntity(BlockPos pos, BlockState blockState) {
-        super(ModBlockEntities.MATERIAL_COMPRESSOR_TIER_1_BE.get(), pos, blockState);
+        super(ModBlockEntities.MATERIAL_COMPRESSOR_BE.get(), pos, blockState);
         this.data = new ContainerData() {
             @Override
             public int get(int index) {
@@ -165,9 +165,20 @@ public class MaterialCompressorBlockEntity extends BlockEntity implements MenuPr
         }
     }
 
+    /**
+     * Which machine this is. Read off the block rather than stored, the same way {@code FACING} is:
+     * a block entity can outlive its block for a tick during removal, so the first tier stands in if
+     * the block has already gone.
+     */
+    private CompressorTier tier() {
+        return getBlockState().getBlock() instanceof MaterialCompressorBlock compressor
+                ? compressor.tier()
+                : CompressorTier.TIER_1;
+    }
+
     @Override
     public Component getDisplayName() {
-        return Component.translatable("block.unnecessarilycompressedcobblestone.material_compressor_tier_1");
+        return Component.translatable("block." + UnnecessarilyCompressedCobblestone.MOD_ID + "." + tier().blockName());
     }
 
     @Nullable
@@ -200,9 +211,9 @@ public class MaterialCompressorBlockEntity extends BlockEntity implements MenuPr
         }
     }
 
-    /** Coal is waiting and the finished block will have somewhere to go. */
+    /** Something this tier accepts is waiting, and the finished block will have somewhere to go. */
     private boolean canCompress() {
-        if (!itemHandler.getStackInSlot(INPUT_SLOT).is(Items.COAL_BLOCK)) {
+        if (!itemHandler.getStackInSlot(INPUT_SLOT).is(tier().input())) {
             return false;
         }
 
@@ -210,7 +221,7 @@ public class MaterialCompressorBlockEntity extends BlockEntity implements MenuPr
         return output.isEmpty() || (output.is(result().getItem()) && output.getCount() < output.getMaxStackSize());
     }
 
-    /** One block of coal is spent and one compressed block is added to whatever is already waiting. */
+    /** One input block is spent and one compressed block is added to whatever is already waiting. */
     private void compress() {
         if (!canCompress()) {
             return;
@@ -228,8 +239,8 @@ public class MaterialCompressorBlockEntity extends BlockEntity implements MenuPr
         setChanged();
     }
 
-    private static ItemStack result() {
-        return new ItemStack(ModBlocks.byLevel(OUTPUT_LEVEL).get());
+    private ItemStack result() {
+        return new ItemStack(ModBlocks.byLevel(tier().outputLevel()).get());
     }
 
     private void resetProgress() {

@@ -1,0 +1,40 @@
+{
+  "type": "minecraft:random_selector",
+  "config": {
+    "default": "unnecessarilycompressedcobblestone:compressed_cobblestone_tree_bush",
+    "features": [
+      {
+        "chance": 1.0,
+        "feature": "unnecessarilycompressedcobblestone:compressed_cobblestone_tree_oak"
+      },
+      {
+        "chance": 1.0,
+        "feature": "unnecessarilycompressedcobblestone:compressed_cobblestone_tree_fancy"
+      },
+      {
+        "chance": 1.0,
+        "feature": "unnecessarilycompressedcobblestone:compressed_cobblestone_tree_spruce"
+      },
+      {
+        "chance": 1.0,
+        "feature": "unnecessarilycompressedcobblestone:compressed_cobblestone_tree_pine"
+      },
+      {
+        "chance": 1.0,
+        "feature": "unnecessarilycompressedcobblestone:compressed_cobblestone_tree_acacia"
+      },
+      {
+        "chance": 1.0,
+        "feature": "unnecessarilycompressedcobblestone:compressed_cobblestone_tree_dark_oak"
+      },
+      {
+        "chance": 1.0,
+        "feature": "unnecessarilycompressedcobblestone:compressed_cobblestone_tree_giant"
+      },
+      {
+        "chance": 1.0,
+        "feature": "unnecessarilycompressedcobblestone:compressed_cobblestone_tree_cherry"
+      }
+    ]
+  }
+}

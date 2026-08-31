@@ -1,6 +1,8 @@
 {
   "values": [
     "unnecessarilycompressedcobblestone:compressed_cobblestone_boots",
-    "unnecessarilycompressedcobblestone:compression_jump_boots"
+    "unnecessarilycompressedcobblestone:compression_jump_boots",
+    "unnecessarilycompressedcobblestone:compression_lightning_boots",
+    "unnecessarilycompressedcobblestone:compression_arrow_boots"
   ]
 }

@@ -2,6 +2,7 @@ package net.fahr3n.unnecessarilycompressedcobblestone.screen;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.CompressionInscriberMenu;
+import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.EngravingTableMenu;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.MaterialCompressorMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -21,6 +22,9 @@ public class ModMenuTypes {
 
     public static final DeferredHolder<MenuType<?>, MenuType<MaterialCompressorMenu>> MATERIAL_COMPRESSOR_MENU =
             registerMenuType("material_compressor_tier_1_menu", MaterialCompressorMenu::new);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<EngravingTableMenu>> ENGRAVING_TABLE_MENU =
+            registerMenuType("engraving_table_menu", EngravingTableMenu::new);
 
     private static <T extends AbstractContainerMenu> DeferredHolder<MenuType<?>, MenuType<T>> registerMenuType(
             String name, IContainerFactory<T> factory) {

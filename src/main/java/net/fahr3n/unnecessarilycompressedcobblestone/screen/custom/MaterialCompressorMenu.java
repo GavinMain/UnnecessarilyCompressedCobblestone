@@ -1,6 +1,6 @@
 package net.fahr3n.unnecessarilycompressedcobblestone.screen.custom;
 
-import net.fahr3n.unnecessarilycompressedcobblestone.block.ModBlocks;
+import net.fahr3n.unnecessarilycompressedcobblestone.block.custom.MaterialCompressorBlock;
 import net.fahr3n.unnecessarilycompressedcobblestone.block.entity.MaterialCompressorBlockEntity;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.ModMenuTypes;
 import net.minecraft.network.FriendlyByteBuf;
@@ -104,10 +104,16 @@ public class MaterialCompressorMenu extends AbstractContainerMenu {
         return copy;
     }
 
+    /**
+     * Any tier of the machine keeps the screen open, since they share this menu. Vanilla's helper
+     * only takes one block, so the check is spelled out against the class instead.
+     */
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()), player,
-                ModBlocks.MATERIAL_COMPRESSOR_TIER_1.get());
+        return ContainerLevelAccess.create(level, blockEntity.getBlockPos()).evaluate(
+                (containerLevel, pos) -> containerLevel.getBlockState(pos).getBlock() instanceof MaterialCompressorBlock
+                        && player.canInteractWithBlock(pos, 4.0),
+                true);
     }
 
     private void addPlayerInventory(Inventory playerInventory) {

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "unnecessarilycompressedcobblestone:block/material_compressor_tier_2",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "unnecessarilycompressedcobblestone:block/material_compressor_tier_2"
+    },
+    "facing=south": {
+      "model": "unnecessarilycompressedcobblestone:block/material_compressor_tier_2",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "unnecessarilycompressedcobblestone:block/material_compressor_tier_2",
+      "y": 270
+    }
+  }
+}

@@ -1,10 +1,12 @@
 package net.fahr3n.unnecessarilycompressedcobblestone.component;
 
+import java.util.List;
 import java.util.function.UnaryOperator;
 
 import com.mojang.serialization.Codec;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.Engraving;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.neoforged.bus.api.IEventBus;
@@ -26,6 +28,21 @@ public class ModDataComponents {
      */
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<Double>> COMPRESSION_ENERGY =
             register("compression_energy", builder -> builder.persistent(Codec.DOUBLE).networkSynchronized(ByteBufCodecs.DOUBLE));
+
+    /**
+     * The engravings cut into a piece of gear, in the order they went on.
+     * <p>
+     * A list rather than a set because the Engraving Table gives them back last first, which is the
+     * only ordering a player ever sees; {@code Engravings} is what keeps it to one of each kind. The
+     * component is dropped entirely when the last engraving comes off, so stripped gear stacks with
+     * gear that was never engraved.
+     */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<List<Engraving>>> ENGRAVINGS =
+            register("engravings", builder -> builder
+                    .persistent(Engraving.CODEC.listOf())
+                    .networkSynchronized(ByteBufCodecs.stringUtf8(64)
+                            .map(Engraving::byName, Engraving::getSerializedName)
+                            .apply(ByteBufCodecs.list())));
 
     private static <T> DeferredHolder<DataComponentType<?>, DataComponentType<T>> register(
             String name, UnaryOperator<DataComponentType.Builder<T>> builderOperator) {

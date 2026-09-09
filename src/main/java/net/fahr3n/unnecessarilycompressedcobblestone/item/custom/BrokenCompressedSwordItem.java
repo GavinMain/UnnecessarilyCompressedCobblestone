@@ -10,8 +10,8 @@ import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 
 /**
- * The sword that carries every enchantment in the game at once, at 255 apiece - including the ones
- * that mean nothing on a sword, and the curses.
+ * The sword that carries every enchantment in the game at once, at {@value #LEVEL} apiece -
+ * including the ones that mean nothing on a sword, and the curses.
  * <p>
  * The enchantments are stamped on at runtime rather than baked into the recipe, and that is the
  * whole point of the class. Enchantments are a datapack registry, so what "every enchantment" means
@@ -31,8 +31,15 @@ import net.minecraft.world.level.Level;
  * the point, not a problem to be tidied away behind a summary.
  */
 public class BrokenCompressedSwordItem extends CompressedCobblestoneSwordItem {
-    /** What every enchantment is set to; see {@link FullEnchantment#LEVEL} for why 255. */
-    public static final int LEVEL = FullEnchantment.LEVEL;
+    /**
+     * What every enchantment on this sword is set to.
+     * <p>
+     * 255 is vanilla's own ceiling on an enchantment level, and this sword keeps it now that the
+     * mod's mixin has moved the ceiling higher for the tier 2 pickaxe. That is the claim this sword
+     * makes and it is the more interesting one: everything the game itself had, at the highest level
+     * the game itself allowed. See {@link FullEnchantment#CEILING} for what the ceiling is now.
+     */
+    public static final int LEVEL = 255;
 
     /** How often the sword checks whether the registry has grown under it, in ticks. */
     private static final int TOP_UP_INTERVAL = 100;
@@ -46,7 +53,7 @@ public class BrokenCompressedSwordItem extends CompressedCobblestoneSwordItem {
      * built for the creative tab, so a copy is fully enchanted before anyone ever holds it.
      */
     public static void enchantFully(ItemStack stack, HolderLookup.Provider registries) {
-        FullEnchantment.apply(stack, registries, true);
+        FullEnchantment.apply(stack, registries, true, LEVEL);
     }
 
     /**
@@ -60,7 +67,7 @@ public class BrokenCompressedSwordItem extends CompressedCobblestoneSwordItem {
             return;
         }
 
-        if (FullEnchantment.needsTopUp(stack, level.registryAccess(), true)) {
+        if (FullEnchantment.needsTopUp(stack, level.registryAccess(), true, LEVEL)) {
             enchantFully(stack, level.registryAccess());
         }
     }

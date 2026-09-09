@@ -474,6 +474,8 @@
   "item.unnecessarilycompressedcobblestone.compressed_guardian_spawn_egg": "Compressed Guardian Spawn Egg",
   "item.unnecessarilycompressedcobblestone.compressed_husk_spawn_egg": "Compressed Husk Spawn Egg",
   "item.unnecessarilycompressedcobblestone.compressed_snow_golem_spawn_egg": "Compressed Snow Golem Spawn Egg",
+  "enchantment.level.255": "255",
+  "enchantment.level.999": "999",
   "enchantment.unnecessarilycompressedcobblestone.multicast": "Multicast",
   "enchantment.unnecessarilycompressedcobblestone.surge": "Surge",
   "enchantment.unnecessarilycompressedcobblestone.silent_cast": "Silent Cast",

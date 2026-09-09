@@ -31,8 +31,8 @@ import net.minecraft.world.level.Level;
  * distance applies in survival and creative alike, shows in the tooltip, and stacks with the Reach
  * engraving without either knowing about the other. And it carries every enchantment in the game at
  * once, curses excepted, worked out from the registry when it is held rather than written into its
- * recipe: see {@link FullEnchantment} for why that has to happen at runtime, and why the level is
- * 255 rather than any larger number that might be asked for. All of them are listed in the tooltip
+ * recipe: see {@link FullEnchantment} for why that has to happen at runtime, and {@link #LEVEL} for
+ * why the figure is the one it is. All of them are listed in the tooltip
  * one line at a time, which is a screenful and is meant to be.
  */
 public class CompressedCobblestonePickaxeTier2Item extends CompressedCobblestonePickaxeItem {
@@ -42,6 +42,13 @@ public class CompressedCobblestonePickaxeTier2Item extends CompressedCobblestone
     /** Vanilla's own pickaxe numbers, restated because {@code createAttributes} cannot be added to. */
     public static final float ATTACK_DAMAGE = 1.0F;
     public static final float ATTACK_SPEED = -2.8F;
+
+    /**
+     * What every enchantment on this pickaxe is set to: the ceiling, which is as high as anything in
+     * the game can go and is 999 only because this mod's mixin moved it there. The Broken Compressed
+     * Sword keeps vanilla's 255, so the two items are two different claims rather than one repeated.
+     */
+    public static final int LEVEL = FullEnchantment.CEILING;
 
     /** How often the pickaxe checks whether the enchantment registry has grown under it, in ticks. */
     private static final int TOP_UP_INTERVAL = 100;
@@ -93,7 +100,7 @@ public class CompressedCobblestonePickaxeTier2Item extends CompressedCobblestone
      * built for the creative tab, so a copy is fully enchanted before anyone ever holds it.
      */
     public static void enchantFully(ItemStack stack, HolderLookup.Provider registries) {
-        FullEnchantment.apply(stack, registries, false);
+        FullEnchantment.apply(stack, registries, false, LEVEL);
     }
 
     /**
@@ -109,7 +116,7 @@ public class CompressedCobblestonePickaxeTier2Item extends CompressedCobblestone
             return;
         }
 
-        if (FullEnchantment.needsTopUp(stack, level.registryAccess(), false)) {
+        if (FullEnchantment.needsTopUp(stack, level.registryAccess(), false, LEVEL)) {
             enchantFully(stack, level.registryAccess());
         }
     }

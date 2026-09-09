@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "minVersion": "0.8.5",
+  "package": "net.fahr3n.unnecessarilycompressedcobblestone.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ItemEnchantmentsMixin",
+    "ItemEnchantmentsMutableMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

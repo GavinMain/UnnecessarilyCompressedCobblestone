@@ -51,8 +51,11 @@ Storage for people whose cobblestone problem got out of hand.
 '''
 
 # The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.
-#[[mixins]]
-#config="${mod_id}.mixins.json"
+# This mod has one, and it exists for one reason: the 255 ceiling on an enchantment level is a
+# bounds check and a codec range in compiled code, so no access transformer or event can move it.
+# See ItemEnchantmentsMixin.
+[[mixins]]
+config="${mod_id}.mixins.json"
 
 # The [[accessTransformers]] block allows you to declare where your AT file is.
 # If this block is omitted, a fallback attempt will be made to load an AT from META-INF/accesstransformer.cfg

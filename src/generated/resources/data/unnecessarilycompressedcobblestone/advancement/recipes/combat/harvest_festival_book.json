@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_compressed_cobblestone_225": {
+      "conditions": {
+        "items": [
+          {
+            "items": "unnecessarilycompressedcobblestone:compressed_cobblestone_225"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "unnecessarilycompressedcobblestone:harvest_festival_book"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_compressed_cobblestone_225"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "unnecessarilycompressedcobblestone:harvest_festival_book"
+    ]
+  }
+}

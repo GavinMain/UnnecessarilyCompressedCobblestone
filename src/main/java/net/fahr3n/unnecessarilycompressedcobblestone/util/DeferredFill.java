@@ -2,12 +2,12 @@ package net.fahr3n.unnecessarilycompressedcobblestone.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.fahr3n.unnecessarilycompressedcobblestone.damage.ModDamageTypes;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
 import net.fahr3n.unnecessarilycompressedcobblestone.worldgen.ModConfiguredFeatures;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedArrowEntity;
@@ -16,6 +16,8 @@ import net.fahr3n.unnecessarilycompressedcobblestone.block.custom.CompressedTntB
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedCobblestoneChickenEntity;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedPrimedTntEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.particles.ParticleTypes;
@@ -29,12 +31,24 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.block.SnowLayerBlock;
+import net.fahr3n.unnecessarilycompressedcobblestone.block.ModBlocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -137,17 +151,172 @@ public final class DeferredFill {
         JOBS.add(new ClusterBlast(level.dimension(), source, center, power));
     }
 
+    /**
+     * Scatters cobwebs through a cylinder reaching to the edge of what a player can see. See
+     * {@link WebField} for why this is thrown at rather than walked.
+     */
+    public static void queueWebs(ServerLevel level, BlockPos origin) {
+        JOBS.add(new WebField(level.dimension(), origin));
+    }
+
+    /** Lays snow over the ground around {@code origin}, deep in the middle and thinning to the rim. */
+    public static void queueSnowfield(ServerLevel level, BlockPos origin) {
+        JOBS.add(new Snowfield(level.dimension(), origin));
+    }
+
+    /**
+     * Stands a Menger sponge of ancient debris over {@code origin} and turns the ground under it to
+     * Slippery Ice. See {@link Fractal} for why it is the width it is.
+     */
+    public static void queueFractal(ServerLevel level, BlockPos origin) {
+        JOBS.add(new Fractal(level.dimension(), origin));
+    }
+
+    /**
+     * Raises a one block wide column of {@code fluid} out of {@code origin}, a block a tick. See
+     * {@link Geyser} for why the eruption is the job rather than a thing the job produces.
+     */
+    public static void queueGeyser(ServerLevel level, BlockPos origin, BlockState fluid, int height) {
+        JOBS.add(new Geyser(level.dimension(), origin, fluid, height));
+    }
+
+    /**
+     * Digs a basin around {@code origin}, fills it with water and grows a coral reef in it. See
+     * {@link Reef} for why the shape is a bowl rather than a slab.
+     */
+    public static void queueReef(ServerLevel level, BlockPos origin) {
+        JOBS.add(new Reef(level.dimension(), origin));
+    }
+
+    /**
+     * Ten seconds of a weak black hole at {@code centre}: everything loose nearby is pulled towards
+     * it, and the ground around it is torn up a few blocks at a time and thrown in after them.
+     */
+    public static void queueSingularity(ServerLevel level, Vec3 centre) {
+        JOBS.add(new Singularity(level.dimension(), centre));
+    }
+
+    /**
+     * Builds a hollow hemisphere of {@code fill}, one block thick, standing on the layer
+     * {@code origin} is on: a dome, one horizontal ring of it per tick. See {@link Dome}.
+     */
+    public static void queueDome(ServerLevel level, BlockPos origin, int radius, BlockState fill) {
+        JOBS.add(new Dome(level.dimension(), origin, radius, fill));
+    }
+
+    /**
+     * Five minutes of a pull that starts almost politely and ends taking the landscape with it. See
+     * {@link BlackHole}, which is the Singularity's own job with time added to it.
+     */
+    public static void queueBlackHole(ServerLevel level, Vec3 centre) {
+        JOBS.add(new BlackHole(level.dimension(), centre, BlackHole.TICKS, 0.0F));
+    }
+
+    /**
+     * The same black hole, run through in {@code ticks} rather than in five minutes, and finished
+     * with one explosion worth {@code power}.
+     * <p>
+     * It is the {@link BlackHole} job with two of its numbers moved rather than a job of its own,
+     * which is the whole reason the Singularity TNT reads as that charge's third tier: the pull, the
+     * reach and the digging all follow the same curve and the same growth, and what changes is only
+     * how long the curve is walked. Five seconds of it is five minutes of it played at sixty times
+     * the speed - it starts as a nuisance and ends taking the landscape with it, in the time it
+     * takes to look up.
+     */
+    public static void queueCollapse(ServerLevel level, Vec3 centre, int ticks, float power) {
+        JOBS.add(new BlackHole(level.dimension(), centre, ticks, power));
+    }
+
+    /**
+     * Takes every block within {@code radius} of {@code centre} that can be taken at all, one
+     * horizontal layer a tick. See {@link Crater}.
+     */
+    public static void queueCrater(ServerLevel level, Vec3 centre, int radius) {
+        JOBS.add(new Crater(level.dimension(), BlockPos.containing(centre), radius));
+    }
+
+    /**
+     * Flattens a disc of {@code radius} around {@code origin} into somewhere a boss fight can
+     * actually happen: every hole in the floor filled and everything standing on it taken away. See
+     * {@link Arena} for the shape of it.
+     */
+    public static void queueArena(ServerLevel level, BlockPos origin, int radius) {
+        JOBS.add(new Arena(level.dimension(), origin, radius));
+    }
+
+    /**
+     * Works out where and how a vanilla structure would be built at {@code origin}, exactly as
+     * {@code /place structure} does: {@code Structure#generate} with a biome predicate that accepts
+     * everything.
+     * <p>
+     * That predicate is <em>not</em> a way past every check. It only replaces the
+     * "is this structure allowed in this biome" test; a structure may still refuse on rules written
+     * inside its own {@code findGenerationPoint}, and two of the three used here do - an ocean
+     * monument insists every biome within twenty-nine blocks is ocean or river, and a woodland
+     * mansion refuses below y 60. A refusal comes back as {@link StructureStart#INVALID_START}, so
+     * the caller must check {@link StructureStart#isValid()} and decide what to do about it.
+     *
+     * @return the start to build, or {@link StructureStart#INVALID_START} if it declined
+     */
+    public static StructureStart generateStructure(ServerLevel level, BlockPos origin, ResourceKey<Structure> key) {
+        Optional<Holder.Reference<Structure>> holder = level.registryAccess()
+                .lookupOrThrow(Registries.STRUCTURE).get(key);
+        if (holder.isEmpty()) {
+            return StructureStart.INVALID_START;
+        }
+
+        ChunkGenerator generator = level.getChunkSource().getGenerator();
+        return holder.get().value().generate(
+                level.registryAccess(), generator, generator.getBiomeSource(),
+                level.getChunkSource().randomState(), level.getStructureManager(), level.getSeed(),
+                new ChunkPos(origin), 0, level, biome -> true);
+    }
+
+    /**
+     * Lays a generated structure into the world, one chunk of it per tick.
+     * <p>
+     * Only the placing is deferred, and that is the half worth deferring: a mansion is some five
+     * chunks square and several thousand blocks in each of them, which is a chunk fill's worth of
+     * writes on one tick if it is all done at once. See {@code StructureBuild} for why the slice is
+     * a chunk rather than a layer.
+     */
+    public static void queueStructure(ServerLevel level, StructureStart start) {
+        if (start.isValid()) {
+            JOBS.add(new StructureBuild(level.dimension(), start));
+        }
+    }
+
+    /**
+     * Flattens a disc of {@code radius} around {@code origin} outright: a solid floor of
+     * {@code fill} laid across the whole disc, and every block above it up to the world's ceiling
+     * taken away. See {@link Flatten} for why it is laid floor-first and cleared top-down.
+     */
+    public static void queueFlatten(ServerLevel level, BlockPos origin, int radius, BlockState fill) {
+        JOBS.add(new Flatten(level.dimension(), origin, radius, fill, level.getMaxBuildHeight() - 1));
+    }
+
+    /**
+     * Raises one-block-wide columns of {@code fill} from the bottom of the world to the top, at
+     * random columns of a disc of {@code radius} around {@code origin} - one column in
+     * {@code chance} of them.
+     */
+    public static void queuePillars(ServerLevel level, BlockPos origin, int radius, int chance, BlockState fill) {
+        JOBS.add(new Pillars(level.dimension(), origin, radius, chance, fill, level.random));
+    }
+
     /** Advances every job belonging to this level by one step. */
     public static void tick(ServerLevel level) {
         if (JOBS.isEmpty()) {
             return;
         }
 
-        Iterator<Job> jobs = JOBS.iterator();
-        while (jobs.hasNext()) {
-            Job job = jobs.next();
+        // Over a snapshot rather than over the list, because a job may queue another one as it
+        // finishes - the Singularity's collapse queues the hole it leaves - and an iterator over
+        // the live list would throw the moment it did. A job added during this loop simply waits
+        // for the next tick, which is what a job queued mid-tick does anyway.
+        for (Job job : List.copyOf(JOBS)) {
             if (job.dimension().equals(level.dimension()) && job.advance(level)) {
-                jobs.remove();
+                JOBS.remove(job);
             }
         }
     }
@@ -944,4 +1113,1436 @@ public final class DeferredFill {
      * cost of the very thing this class exists to spread out.
      */
     private static final int FLAGS = Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE | Block.UPDATE_SUPPRESS_DROPS;
+
+    /**
+     * Cobwebs scattered through a cylinder six hundred and forty blocks in radius and twenty-one
+     * deep - about twenty-seven million blocks, which is five thousand chunk columns' worth.
+     * <p>
+     * Every other job here walks its volume. This one cannot: at {@code ChunkFill}'s thousand blocks
+     * a tick, reading twenty-seven million of them would take twenty-two minutes, and reading them
+     * any faster is the stall the whole class exists to avoid. So it throws darts instead - a fixed
+     * number of uniformly drawn positions per tick - which costs one block read per web attempted
+     * rather than one per block in range. The price of sampling is that the same position can come
+     * up twice; at this density that is a rounding error, and the second dart simply finds a web
+     * already there.
+     * <p>
+     * Only air becomes a web. Underground the darts land in stone and miss, above the surface they
+     * land in sky and hit, so what a player actually walks through is a thin haze of webs in the
+     * open air - one in a few thousand blocks - and nothing is ever sealed in.
+     */
+    private static final class WebField implements Job {
+        /** How far out it reaches: forty chunks, which is past any render distance in the settings. */
+        private static final int RADIUS = 640;
+
+        /** How deep the band is, centred on the blast: ten either way. */
+        private static final int HALF_HEIGHT = 10;
+
+        /**
+         * How long the scattering goes on for, and how many darts are thrown on each of those
+         * ticks. The two multiply out to twenty thousand darts into twenty-seven million blocks,
+         * which is the density the whole thing is priced at: seven hundredths of a percent, or one
+         * web per thirteen hundred blocks of open air. Sparse is the point - a web every few paces
+         * is a wall, and this is meant to be something a player walks into once in a while.
+         */
+        private static final int TICKS = 500;
+        private static final int DARTS_PER_TICK = 40;
+
+        private final ResourceKey<Level> dimension;
+        private final BlockPos origin;
+        private int tick;
+
+        private WebField(ResourceKey<Level> dimension, BlockPos origin) {
+            this.dimension = dimension;
+            this.origin = origin;
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            RandomSource random = level.random;
+            BlockState web = Blocks.COBWEB.defaultBlockState();
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+
+            for (int i = 0; i < DARTS_PER_TICK; i++) {
+                // Uniform over the disc rather than over the square that contains it: the radius is
+                // the square root of a flat draw, or every web crowds into the middle.
+                double angle = random.nextDouble() * Math.PI * 2.0;
+                double radius = Math.sqrt(random.nextDouble()) * RADIUS;
+
+                pos.set(this.origin.getX() + (int) Math.round(Math.cos(angle) * radius),
+                        this.origin.getY() + random.nextInt(HALF_HEIGHT * 2 + 1) - HALF_HEIGHT,
+                        this.origin.getZ() + (int) Math.round(Math.sin(angle) * radius));
+
+                // isLoaded rather than a chunk load: this reaches far past the chunks anyone is
+                // looking at, and dragging them in to hang a web in each would be the whole world.
+                if (pos.getY() < level.getMinBuildHeight() || pos.getY() >= level.getMaxBuildHeight()
+                        || !level.isLoaded(pos) || !level.getBlockState(pos).isAir()) {
+                    continue;
+                }
+
+                level.setBlock(pos, web, FLAGS);
+            }
+
+            return ++this.tick >= TICKS;
+        }
+    }
+    /**
+     * Snow laid over whatever the ground turns out to be, a row of columns per tick.
+     * <p>
+     * It follows the surface rather than filling a slab, so it drapes over hills instead of burying
+     * them: each column is resolved through the motion-blocking heightmap and the snow goes on top
+     * of whatever that finds. Depth slides from a full block at the middle to a single dusting at
+     * the rim, so the field has an edge rather than a wall.
+     */
+    private static final class Snowfield implements Job {
+        /** How far out it reaches. */
+        private static final int RADIUS = 24;
+
+        /** How many rows of columns are laid each tick; the radius over this is how long it takes. */
+        private static final int ROWS_PER_TICK = 2;
+
+        private final ResourceKey<Level> dimension;
+        private final BlockPos origin;
+        private int dx = -RADIUS;
+
+        private Snowfield(ResourceKey<Level> dimension, BlockPos origin) {
+            this.dimension = dimension;
+            this.origin = origin;
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            int last = Math.min(this.dx + ROWS_PER_TICK, RADIUS + 1);
+
+            for (; this.dx < last; this.dx++) {
+                for (int dz = -RADIUS; dz <= RADIUS; dz++) {
+                    double radius = Math.sqrt((double) this.dx * this.dx + (double) dz * dz);
+                    if (radius > RADIUS) {
+                        continue;
+                    }
+
+                    lay(level, this.origin.offset(this.dx, 0, dz), radius);
+                }
+            }
+
+            return this.dx > RADIUS;
+        }
+
+        /** One column: the first free space above whatever is solid there, if snow will stand on it. */
+        private void lay(ServerLevel level, BlockPos column, double radius) {
+            if (!level.isLoaded(column)) {
+                return;
+            }
+
+            BlockPos surface = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column);
+            BlockState existing = level.getBlockState(surface);
+            if (!existing.isAir() && !existing.canBeReplaced()) {
+                return;
+            }
+
+            // Vanilla's own test for whether snow will lie here, so it never hangs off a fence post
+            // or floats over a hole in the ground.
+            BlockState snow = Blocks.SNOW.defaultBlockState()
+                    .setValue(SnowLayerBlock.LAYERS, layersAt(radius));
+            if (snow.canSurvive(level, surface)) {
+                level.setBlock(surface, snow, FLAGS);
+            }
+        }
+
+        /** Eight layers - a full block - in the middle, sliding down to one at the rim. */
+        private static int layersAt(double radius) {
+            return Mth.clamp(Math.round(Mth.lerp((float) (radius / RADIUS), 8.0F, 1.0F)), 1, 8);
+        }
+    }
+
+    /**
+     * A Menger sponge of ancient debris standing over the blast, with the ground under it turned to
+     * Slippery Ice. One horizontal slice of the sponge per tick.
+     * <p>
+     * The sponge is the carpet's own rule in three dimensions, and it is worth the extra axis: a
+     * carpet is a pattern you have to be above to see at all, while a sponge is a solid you can walk
+     * around, look through in all three directions and climb into. Every level cuts the cube into
+     * twenty-seven and throws away the middle of the cube and the middle of each of its six faces,
+     * leaving twenty of the twenty-seven - so a sponge {@link #DEPTH} levels deep is {@code 20^DEPTH}
+     * blocks and every one of its tunnels goes all the way through.
+     * <p>
+     * The width is not a free choice, for the same reason the carpet's was not: the smallest hole is
+     * the width over three to the depth, and a hole under one block wide is not a hole. {@link #WIDTH}
+     * is exactly {@code 3^DEPTH}, which lands the last level of detail on single blocks. Three levels
+     * at 27 blocks is what a block grid can hold and what a fight can stand next to; a fourth would
+     * mean 81 blocks on a side and 160,000 blocks of ancient debris, which is a mountain rather than
+     * a sculpture.
+     * <p>
+     * Membership is read straight off the base-3 digits rather than by recursing: a cell is dropped
+     * as soon as two of its three digits at some level are 1, which is the same statement as "it is
+     * in the middle of the cube or the middle of a face at that level".
+     */
+    private static final class Fractal implements Job {
+        /** How many times the cube is cut into twenty-seven. */
+        private static final int DEPTH = 3;
+
+        /** Three to the power of the depth: 27 blocks on every side. */
+        private static final int WIDTH = 27;
+
+        /** How high over the blast the sponge's underside sits. */
+        private static final int HEIGHT = 4;
+
+        /**
+         * How many horizontal slices are laid each tick. One slice is {@code WIDTH * WIDTH} columns,
+         * so a slice a tick is 729 block reads - well under what reads as a stall - and the whole
+         * sponge stands in {@link #WIDTH} ticks.
+         */
+        private static final int LAYERS_PER_TICK = 1;
+
+        private final ResourceKey<Level> dimension;
+        private final BlockPos origin;
+        private int y;
+
+        private Fractal(ResourceKey<Level> dimension, BlockPos origin) {
+            this.dimension = dimension;
+            this.origin = origin;
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            BlockState debris = Blocks.ANCIENT_DEBRIS.defaultBlockState();
+            BlockState ice = ModBlocks.SLIPPERY_ICE.get().defaultBlockState();
+            int last = Math.min(this.y + LAYERS_PER_TICK, WIDTH);
+
+            for (; this.y < last; this.y++) {
+                for (int x = 0; x < WIDTH; x++) {
+                    for (int z = 0; z < WIDTH; z++) {
+                        BlockPos column = this.origin.offset(x - WIDTH / 2, 0, z - WIDTH / 2);
+                        if (!level.isLoaded(column)) {
+                            continue;
+                        }
+
+                        // The floor is laid on the first slice only: every column gets ice, sponge
+                        // or no sponge, so the field underneath is a solid sheet and the pattern is
+                        // entirely overhead. Doing it once rather than on all 27 slices is what
+                        // keeps a slice cheap.
+                        if (this.y == 0) {
+                            BlockPos surface = level
+                                    .getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, column).below();
+                            if (level.getBlockState(surface).getDestroySpeed(level, surface) >= 0.0F) {
+                                level.setBlock(surface, ice, FLAGS);
+                            }
+                        }
+
+                        if (!inSponge(x, this.y, z)) {
+                            continue;
+                        }
+
+                        BlockPos at = column.atY(this.origin.getY() + HEIGHT + this.y);
+                        if (level.getBlockState(at).getDestroySpeed(level, at) >= 0.0F) {
+                            level.setBlock(at, debris, FLAGS);
+                        }
+                    }
+                }
+            }
+
+            return this.y >= WIDTH;
+        }
+
+        /** Whether {@code (x, y, z)} survives every level of the cut. */
+        private static boolean inSponge(int x, int y, int z) {
+            for (int i = 0; i < DEPTH; i++) {
+                int middles = (x % 3 == 1 ? 1 : 0) + (y % 3 == 1 ? 1 : 0) + (z % 3 == 1 ? 1 : 0);
+                if (middles >= 2) {
+                    return false;
+                }
+
+                x /= 3;
+                y /= 3;
+                z /= 3;
+            }
+
+            return true;
+        }
+    }
+
+    /**
+     * A column of fluid one block wide, laid a block a tick from the ground upwards.
+     * <p>
+     * This is the clearest case in the class of spreading work being the <em>effect</em> rather than
+     * a budget for it, the same way the Pinball TNT's bursts are. Forty blocks is nothing to write in
+     * one tick - the chunk filler does twenty-five times that - but written all at once a geyser is
+     * a column that simply exists, and written a block a tick it is something climbing out of the
+     * ground. Two seconds is the whole of the difference.
+     * <p>
+     * The column is source blocks and nothing holds them in, which is deliberate: vanilla's own fluid
+     * ticking takes over the moment each one is placed, so what a player actually sees is a spout
+     * that climbs and a sheet that falls back off it. Nothing here has to model that.
+     */
+    private static final class Geyser implements Job {
+        /** How many blocks of column go up each tick. One, because the climb is the point. */
+        private static final int PER_TICK = 1;
+
+        private final ResourceKey<Level> dimension;
+        private final BlockPos origin;
+        private final BlockState fluid;
+        private final int height;
+        private int laid;
+
+        private Geyser(ResourceKey<Level> dimension, BlockPos origin, BlockState fluid, int height) {
+            this.dimension = dimension;
+            this.origin = origin;
+            this.fluid = fluid;
+            this.height = height;
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            for (int i = 0; i < PER_TICK && this.laid < this.height; i++) {
+                BlockPos pos = this.origin.above(this.laid++);
+                if (pos.getY() >= level.getMaxBuildHeight() || !level.isLoaded(pos)) {
+                    return true;
+                }
+
+                // Only where there is room. A geyser that ate its way through an overhang would be
+                // a drill, and the hardened compression levels are unbreakable to everything - so
+                // anything solid is passed over and the column carries on above it.
+                BlockState existing = level.getBlockState(pos);
+                if (existing.isAir() || existing.canBeReplaced()) {
+                    // UPDATE_ALL rather than the class's usual quiet flags: this one wants its
+                    // neighbour updates, because the flow off the column is the whole spectacle.
+                    level.setBlock(pos, this.fluid, Block.UPDATE_ALL);
+                }
+            }
+
+            return this.laid >= this.height;
+        }
+    }
+
+    /**
+     * A coral reef: a bowl of water dug out of whatever the blast landed on, with coral growing in
+     * it. One row of columns per tick, the same shape of walk the snowfield does.
+     * <p>
+     * The bowl is the whole reason this is not simply the Pool TNT with decoration. A flat disc of
+     * water one block deep has nowhere for coral to be - a reef needs depth, and depth on land means
+     * digging rather than pouring. The floor is a paraboloid, deepest in the middle and reaching the
+     * original ground level at the rim, so the water has a shore instead of a wall and the tallest
+     * outcrops have room to stand without breaking the surface.
+     * <p>
+     * Coral is the one decoration in this class with a survival rule of its own: a coral plant or
+     * fan out of water turns to its dead variant on the next random tick, and vanilla decides that
+     * by reading the block's own {@code WATERLOGGED} property rather than by looking around it.
+     * Every plant placed here therefore sets that property true - which is also what keeps the reef
+     * alive if a player later drains it, since the plant is carrying its own water.
+     */
+    private static final class Reef implements Job {
+        /** How far out the basin reaches. */
+        private static final int RADIUS = 20;
+
+        /** And how deep it is at the middle. The rim is at the height the TNT went off at. */
+        private static final int DEPTH = 7;
+
+        /** How many rows of columns are dug each tick; the width over this is how long it takes. */
+        private static final int ROWS_PER_TICK = 2;
+
+        /** How high the water stands over the rim, so the basin reads as full rather than as a hole. */
+        private static final int SURFACE = 1;
+
+        /** How much headroom over the water is cleared, so the surface is open sky and not a ceiling. */
+        private static final int CLEARANCE = 2;
+
+        /** The chance a column grows an outcrop, and how tall one may be. */
+        private static final float OUTCROP_CHANCE = 0.14F;
+        private static final int OUTCROP_MIN = 1;
+        private static final int OUTCROP_MAX = 4;
+
+        /** The chance a column with no outcrop still puts something on the floor. */
+        private static final float FAN_CHANCE = 0.18F;
+
+        /** And the chance the bed under the water is coral rock rather than whatever was there. */
+        private static final float BED_CHANCE = 0.35F;
+
+        /** The chance a cap or a floor decoration is the upright plant rather than the fan. */
+        private static final float PLANT_CHANCE = 0.4F;
+
+        /** The five colours, each as the three blocks vanilla gives it. */
+        private static final List<Coral> CORALS = List.of(
+                new Coral(Blocks.TUBE_CORAL_BLOCK, Blocks.TUBE_CORAL, Blocks.TUBE_CORAL_FAN),
+                new Coral(Blocks.BRAIN_CORAL_BLOCK, Blocks.BRAIN_CORAL, Blocks.BRAIN_CORAL_FAN),
+                new Coral(Blocks.BUBBLE_CORAL_BLOCK, Blocks.BUBBLE_CORAL, Blocks.BUBBLE_CORAL_FAN),
+                new Coral(Blocks.FIRE_CORAL_BLOCK, Blocks.FIRE_CORAL, Blocks.FIRE_CORAL_FAN),
+                new Coral(Blocks.HORN_CORAL_BLOCK, Blocks.HORN_CORAL, Blocks.HORN_CORAL_FAN));
+
+        /** One colour of coral: the rock, the upright plant and the fan. */
+        private record Coral(Block block, Block plant, Block fan) {
+        }
+
+        private final ResourceKey<Level> dimension;
+        private final BlockPos origin;
+        private int dx = -RADIUS;
+
+        private Reef(ResourceKey<Level> dimension, BlockPos origin) {
+            this.dimension = dimension;
+            this.origin = origin;
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            int last = Math.min(this.dx + ROWS_PER_TICK, RADIUS + 1);
+
+            for (; this.dx < last; this.dx++) {
+                for (int dz = -RADIUS; dz <= RADIUS; dz++) {
+                    double radius = Math.sqrt((double) this.dx * this.dx + (double) dz * dz);
+                    if (radius > RADIUS) {
+                        continue;
+                    }
+
+                    dig(level, this.origin.offset(this.dx, 0, dz), radius);
+                }
+            }
+
+            return this.dx > RADIUS;
+        }
+
+        /** One column of the basin: the hole, the water in it, and whatever grows on the floor. */
+        private void dig(ServerLevel level, BlockPos column, double radius) {
+            if (!level.isLoaded(column)) {
+                return;
+            }
+
+            // A paraboloid rather than a cone: the middle is a broad flat lagoon and the sides come
+            // up quickly, which is the shape a reef ring actually has.
+            double share = radius / RADIUS;
+            int depth = (int) Math.round(DEPTH * (1.0 - share * share));
+            BlockPos floor = column.below(depth);
+            RandomSource random = level.random;
+
+            // The bed the reef stands on, coloured in patches so the floor is not one flat grey.
+            BlockPos bed = floor.below();
+            if (breakable(level, bed) && !level.getBlockState(bed).isAir()
+                    && random.nextFloat() < BED_CHANCE) {
+                place(level, bed, coral(random).block().defaultBlockState());
+            }
+
+            for (int y = floor.getY(); y <= column.getY() + SURFACE; y++) {
+                place(level, new BlockPos(column.getX(), y, column.getZ()),
+                        Blocks.WATER.defaultBlockState());
+            }
+
+            // Open sky over the water. Without this a reef blasted under an overhang is a flooded
+            // cave, which is a fine thing to be but is not what the fuse promised.
+            for (int y = column.getY() + SURFACE + 1; y <= column.getY() + SURFACE + CLEARANCE; y++) {
+                place(level, new BlockPos(column.getX(), y, column.getZ()),
+                        Blocks.AIR.defaultBlockState());
+            }
+
+            grow(level, floor, column.getY() + SURFACE, random);
+        }
+
+        /**
+         * What stands on this column's floor. An outcrop is a stack of coral rock with a plant on
+         * top of it; anything else is at most a single fan on the floor itself. The stack is capped
+         * below the surface so nothing pokes out of the water and dries.
+         */
+        private void grow(ServerLevel level, BlockPos floor, int surface, RandomSource random) {
+            Coral coral = coral(random);
+
+            if (random.nextFloat() < OUTCROP_CHANCE) {
+                int height = Math.min(Mth.nextInt(random, OUTCROP_MIN, OUTCROP_MAX),
+                        surface - floor.getY());
+
+                for (int i = 0; i < height; i++) {
+                    place(level, floor.above(i), coral.block().defaultBlockState());
+                }
+
+                if (height > 0) {
+                    decorate(level, floor.above(height), coral, random);
+                }
+
+                return;
+            }
+
+            if (random.nextFloat() < FAN_CHANCE) {
+                decorate(level, floor, coral, random);
+            }
+        }
+
+        /** A plant or a fan, waterlogged either way so it does not die the moment it is placed. */
+        private void decorate(ServerLevel level, BlockPos pos, Coral coral, RandomSource random) {
+            Block chosen = random.nextFloat() < PLANT_CHANCE ? coral.plant() : coral.fan();
+            BlockState state = chosen.defaultBlockState()
+                    .setValue(BlockStateProperties.WATERLOGGED, true);
+
+            // Vanilla's own test, so nothing is left hanging where it could not have grown.
+            if (breakable(level, pos) && state.canSurvive(level, pos)) {
+                level.setBlock(pos, state, FLAGS);
+            }
+        }
+
+        private static Coral coral(RandomSource random) {
+            return CORALS.get(random.nextInt(CORALS.size()));
+        }
+
+        /** One block, if it is loaded and is not one of the levels nothing can move. */
+        private static void place(ServerLevel level, BlockPos pos, BlockState state) {
+            if (breakable(level, pos)) {
+                level.setBlock(pos, state, FLAGS);
+            }
+        }
+
+        private static boolean breakable(ServerLevel level, BlockPos pos) {
+            return level.isLoaded(pos) && level.getBlockState(pos).getDestroySpeed(level, pos) >= 0.0F;
+        }
+    }
+
+    /**
+     * A weak singularity: ten seconds of everything near a point being pulled towards it.
+     * <p>
+     * Two halves, and the second is what makes it read as a black hole rather than as a wind. The
+     * pull is applied to every entity in range each tick, falling off with distance so the edge is
+     * a drift and the middle is a fall - a player who commits to running gets out, which is the
+     * whole of the counterplay. The other half tears the ground up: a handful of blocks a tick,
+     * drawn as darts rather than walked (the sphere is some fourteen thousand blocks, and only a
+     * few hundred of them are ever taken), each turned into a real {@link FallingBlockEntity} so
+     * the pull then applies to it like anything else and it lands as a block again afterwards.
+     * <p>
+     * Nothing unbreakable is taken - the hardened compression levels and bedrock are read off the
+     * block's own destroy speed rather than named - and nothing holding an inventory is, so a chest
+     * near the blast keeps what is in it.
+     */
+    /**
+     * The floor a boss brings with it: a disc of {@code RADIUS} blocks around where it landed, made
+     * flat by two writes per column - the block under the fight's ground level filled in if there
+     * is nothing there, and the {@link #CLEAR_HEIGHT} blocks above it taken away.
+     * <p>
+     * That is a hole filled and a hill removed in the same pass, which is what "flat" has to mean:
+     * a platform laid over a ravine is a bridge, and one laid through a hillside is a tunnel, and
+     * neither is a place to fight. Only the one layer of floor is filled - a hole ten blocks deep
+     * still reads as a hole from underneath - because what the fight needs is a surface to stand on
+     * and not a solid plug down to bedrock.
+     * <p>
+     * Nothing here is thrown away for free: the ground level is {@code origin.getY() - 1}, which is
+     * the block the boss is standing on, so a player fighting on their own floor keeps it.
+     * Unbreakable blocks are skipped the way every other job in this class skips them, so bedrock,
+     * the world's ceiling and the mod's own hardened levels are not a way through the floor.
+     * <p>
+     * A disc of fifty is just under eight thousand columns and six writes apiece - close to fifty
+     * thousand blocks, which is half a chunk fill and far past what a tick will take. It is walked
+     * {@link #ROWS_PER_TICK} rows at a time, which puts it at about three thousand writes a tick and
+     * a second for the whole platform: long enough to watch it happen, which is the point.
+     */
+    /**
+     * The Flat TNT's disc: a floor laid across it and everything above that floor removed, all the
+     * way to the world's ceiling.
+     * <p>
+     * The volume is what shapes the job. A disc of radius thirty is about two thousand eight hundred
+     * columns, and a column runs the whole build height - some eight hundred thousand positions,
+     * which is eight full chunk fills and two orders past what may be written on one tick. So the
+     * work is cut into <em>layers</em>, {@value #LAYERS_PER_TICK} of them a tick, and the disc is
+     * walked once per layer rather than the columns being walked once each.
+     * <p>
+     * Two orderings matter and neither is arbitrary. The floor is laid on the very first tick, in
+     * one pass, so that nothing is ever standing over a hole waiting for the clear to reach it - the
+     * ground arrives before the sky goes. The clear then runs <em>downwards</em> from the ceiling,
+     * so what a player watching sees is the landscape being shaved off from the top; running upwards
+     * would take the ground out from under a hill and leave it hanging until the job caught up.
+     * <p>
+     * Nothing is refused except what cannot be broken at all - bedrock, the world's ceiling and any
+     * other mod's unbreakable block, all answered by a negative destroy speed, which is this mod's
+     * test for that everywhere. Containers are <em>not</em> spared, unlike the Vapor Slash's carve:
+     * this is a landscaping charge with a thirty block radius that a player places deliberately, not
+     * an ability fired every second at head height.
+     */
+    private static final class Flatten implements Job {
+        /**
+         * Layers cleared per tick. The disc is about 2,800 columns, so this is that many block reads
+         * a tick - a third of what reads as a stall, and the build height over it is how long the
+         * whole thing takes: about two minutes at the world's full 384, though the great majority of
+         * that is empty sky and passes in seconds of wall clock.
+         */
+        private static final int LAYERS_PER_TICK = 3;
+
+        private final ResourceKey<Level> dimension;
+        private final BlockPos origin;
+        private final int radius;
+        private final BlockState fill;
+
+        /** The layer the clear is working on, counting down; the floor is laid before it starts. */
+        private int y;
+
+        private boolean floorLaid;
+
+        private Flatten(ResourceKey<Level> dimension, BlockPos origin, int radius, BlockState fill, int top) {
+            this.dimension = dimension;
+            this.origin = origin;
+            this.radius = radius;
+            this.fill = fill;
+            this.y = top;
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            if (!this.floorLaid) {
+                this.floorLaid = true;
+                layer(level, this.origin.getY() - 1, this.fill);
+                return false;
+            }
+
+            BlockState air = Blocks.AIR.defaultBlockState();
+            int last = Math.max(this.y - LAYERS_PER_TICK, this.origin.getY() - 1);
+
+            for (; this.y > last; this.y--) {
+                layer(level, this.y, air);
+            }
+
+            return this.y <= this.origin.getY() - 1;
+        }
+
+        /** One horizontal slice of the disc, set to {@code state} wherever it may be written. */
+        private void layer(ServerLevel level, int y, BlockState state) {
+            int radiusSqr = this.radius * this.radius;
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+
+            for (int x = -this.radius; x <= this.radius; x++) {
+                for (int z = -this.radius; z <= this.radius; z++) {
+                    if (x * x + z * z > radiusSqr) {
+                        continue;
+                    }
+
+                    pos.set(this.origin.getX() + x, y, this.origin.getZ() + z);
+                    if (!level.isLoaded(pos)) {
+                        continue;
+                    }
+
+                    BlockState here = level.getBlockState(pos);
+                    if (here == state || (here.isAir() && state.isAir())) {
+                        continue;
+                    }
+
+                    // A negative destroy speed is bedrock, the world's ceiling and this mod's own
+                    // hardened levels - the one thing a flattening charge leaves standing.
+                    if (here.getDestroySpeed(level, pos) < 0.0F) {
+                        continue;
+                    }
+
+                    level.setBlock(pos, state, FLAGS);
+                }
+            }
+        }
+    }
+
+    private static final class Arena implements Job {
+        /** How high above the floor is cleared. Five is two players deep and one jump over that. */
+        private static final int CLEAR_HEIGHT = 5;
+
+        /** Rows of the disc laid per tick; twice the radius over this is how long it takes. */
+        private static final int ROWS_PER_TICK = 5;
+
+        private final ResourceKey<Level> dimension;
+        private final BlockPos origin;
+        private final int radius;
+        private int x;
+
+        private Arena(ResourceKey<Level> dimension, BlockPos origin, int radius) {
+            this.dimension = dimension;
+            this.origin = origin;
+            this.radius = radius;
+            this.x = -radius;
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            BlockState floor = Blocks.COBBLESTONE.defaultBlockState();
+            BlockState air = Blocks.AIR.defaultBlockState();
+            int last = Math.min(this.x + ROWS_PER_TICK, this.radius + 1);
+            int radiusSqr = this.radius * this.radius;
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+
+            for (; this.x < last; this.x++) {
+                for (int z = -this.radius; z <= this.radius; z++) {
+                    if (this.x * this.x + z * z > radiusSqr) {
+                        continue;
+                    }
+
+                    pos.set(this.origin.getX() + this.x, this.origin.getY() - 1, this.origin.getZ() + z);
+                    if (!level.isLoaded(pos)) {
+                        continue;
+                    }
+
+                    // The floor. Anything that is not a full solid block - air, a hole, water, grass -
+                    // becomes one; anything already solid is left exactly as the player left it.
+                    BlockState under = level.getBlockState(pos);
+                    if (!under.isFaceSturdy(level, pos, Direction.UP)
+                            && under.getDestroySpeed(level, pos) >= 0.0F) {
+                        level.setBlock(pos, floor, FLAGS);
+                    }
+
+                    // And everything standing on it.
+                    for (int y = 0; y < CLEAR_HEIGHT; y++) {
+                        pos.setY(this.origin.getY() + y);
+
+                        BlockState state = level.getBlockState(pos);
+                        if (!state.isAir() && state.getDestroySpeed(level, pos) >= 0.0F) {
+                            level.setBlock(pos, air, FLAGS);
+                        }
+                    }
+                }
+            }
+
+            return this.x > this.radius;
+        }
+    }
+
+    private static final class Singularity implements Job {
+        /** Ten seconds of it. */
+        private static final int TICKS = 200;
+
+        /** How far the pull reaches. */
+        private static final double RADIUS = 12.0;
+
+        /**
+         * How hard it pulls at the very middle, in blocks per tick added to the delta each tick.
+         * Weak by design: it beats a walk and loses to a sprint with a running start.
+         */
+        private static final double PULL = 0.12;
+
+        /** How many blocks are torn up each tick. Two hundred over the whole ten seconds. */
+        private static final int BLOCKS_PER_TICK = 1;
+
+        /** How far out the ground is taken from - the pull's reach is wider than the digging. */
+        private static final double DIG_RADIUS = 8.0;
+
+        /** Nothing is dragged out of the last half block, or a mob at the middle jitters. */
+        private static final double DEAD_ZONE = 0.5;
+
+        private final ResourceKey<Level> dimension;
+        private final Vec3 centre;
+        private int ticks;
+
+        private Singularity(ResourceKey<Level> dimension, Vec3 centre) {
+            this.dimension = dimension;
+            this.centre = centre;
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            BlockPos origin = BlockPos.containing(this.centre);
+            if (!level.isLoaded(origin)) {
+                return true;
+            }
+
+            pull(level);
+            dig(level);
+
+            level.sendParticles(ParticleTypes.PORTAL, this.centre.x, this.centre.y, this.centre.z,
+                    30, 1.5, 1.5, 1.5, 0.6);
+
+            return ++this.ticks >= TICKS;
+        }
+
+        /** Everything in reach, moved a little further in. */
+        private void pull(ServerLevel level) {
+            AABB reach = new AABB(this.centre, this.centre).inflate(RADIUS);
+
+            for (Entity entity : level.getEntities((Entity) null, reach, entity -> !entity.isSpectator())) {
+                Vec3 toCentre = this.centre.subtract(entity.position());
+                double distance = toCentre.length();
+                if (distance < DEAD_ZONE || distance > RADIUS) {
+                    continue;
+                }
+
+                double strength = PULL * (1.0 - distance / RADIUS);
+                entity.setDeltaMovement(entity.getDeltaMovement().add(toCentre.scale(strength / distance)));
+
+                // A player's own client is what actually moves them, so the server has to say so.
+                // hurtMarked is what makes the tracker send the velocity it just set.
+                entity.hurtMarked = true;
+            }
+        }
+
+        /** A few blocks of the ground, thrown in after them. */
+        private void dig(ServerLevel level) {
+            RandomSource random = level.random;
+
+            for (int i = 0; i < BLOCKS_PER_TICK; i++) {
+                // A dart rather than a walk: the sphere is far too large to iterate, and what is
+                // wanted from it is sparse. The cube root is what keeps the draw even through the
+                // volume rather than crowding it into the middle.
+                double radius = Math.cbrt(random.nextDouble()) * DIG_RADIUS;
+                double theta = random.nextDouble() * Math.PI * 2.0;
+                double y = random.nextDouble() * 2.0 - 1.0;
+                double ring = Math.sqrt(1.0 - y * y);
+
+                BlockPos pos = BlockPos.containing(
+                        this.centre.x + radius * ring * Math.cos(theta),
+                        this.centre.y + radius * y,
+                        this.centre.z + radius * ring * Math.sin(theta));
+
+                if (!level.isLoaded(pos)) {
+                    continue;
+                }
+
+                BlockState state = level.getBlockState(pos);
+                if (state.isAir() || !state.getFluidState().isEmpty() || state.hasBlockEntity()
+                        || state.getDestroySpeed(level, pos) < 0.0F) {
+                    continue;
+                }
+
+                // fall() writes the air behind it, so the block is never in two places at once. It
+                // is left as a plain falling block: it hurts nobody on the way down and lays itself
+                // back as a block where it lands, which is what keeps this a shove rather than a
+                // demolition.
+                FallingBlockEntity.fall(level, pos, state);
+            }
+        }
+    }
+
+    /**
+     * Lays a generated structure into the world a chunk at a time.
+     * <p>
+     * The {@link StructureStart} was worked out before this job existed, so the only thing left is
+     * the writing - and vanilla already cuts that into chunks, one call per chunk of the bounding
+     * box, which is why this walks chunks where every other job here walks layers or rows. There is
+     * nothing finer available: a piece decides for itself what it puts in the chunk it is handed.
+     * <p>
+     * A chunk that is not loaded is skipped rather than waited for or dragged in, which is the same
+     * rule the chunk fill follows - a structure whose far corner is past the edge of what anybody is
+     * looking at comes out with that corner missing, and that is a better failure than paying to
+     * load chunks nobody asked for. The job walks on regardless, because the far chunks of a
+     * structure's bounding box are often empty of it anyway.
+     */
+    private static final class StructureBuild implements Job {
+        /**
+         * Chunks placed per tick. One, because a single chunk of a mansion or a monument is already
+         * a few thousand block writes - the same budget the chunk fill runs at - and because a
+         * building that assembles itself over a second or two reads as the effect rather than as a
+         * stutter.
+         */
+        private static final int CHUNKS_PER_TICK = 1;
+
+        private final ResourceKey<Level> dimension;
+        private final StructureStart start;
+        private final List<ChunkPos> chunks;
+        private int next;
+
+        private StructureBuild(ResourceKey<Level> dimension, StructureStart start) {
+            this.dimension = dimension;
+            this.start = start;
+
+            BoundingBox box = start.getBoundingBox();
+            ChunkPos min = new ChunkPos(SectionPos.blockToSectionCoord(box.minX()),
+                    SectionPos.blockToSectionCoord(box.minZ()));
+            ChunkPos max = new ChunkPos(SectionPos.blockToSectionCoord(box.maxX()),
+                    SectionPos.blockToSectionCoord(box.maxZ()));
+
+            this.chunks = ChunkPos.rangeClosed(min, max).toList();
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            ChunkGenerator generator = level.getChunkSource().getGenerator();
+            int last = Math.min(this.next + CHUNKS_PER_TICK, this.chunks.size());
+
+            for (; this.next < last; this.next++) {
+                ChunkPos chunk = this.chunks.get(this.next);
+                if (!level.hasChunk(chunk.x, chunk.z)) {
+                    continue;
+                }
+
+                // The whole column of the chunk, which is what /place hands it: the piece clips
+                // itself to its own bounding box inside that.
+                this.start.placeInChunk(level, level.structureManager(), generator, level.getRandom(),
+                        new BoundingBox(chunk.getMinBlockX(), level.getMinBuildHeight(), chunk.getMinBlockZ(),
+                                chunk.getMaxBlockX(), level.getMaxBuildHeight(), chunk.getMaxBlockZ()),
+                        chunk);
+            }
+
+            return this.next >= this.chunks.size();
+        }
+    }
+
+    /**
+     * Full-height columns at scattered points of a disc.
+     * <p>
+     * Which columns is decided once, in the constructor, and it is decided by rolling every column
+     * in the disc rather than by throwing darts - the two are different things and only the roll
+     * gives an honest one-in-{@code chance}. It is affordable here where the dart rule would
+     * normally apply because a roll is only a random number: no block is read to decide, so a disc
+     * of fifty is eight thousand calls to the RNG and no world access at all. The darts in the web
+     * field exist to avoid *reads*, and there are none to avoid here.
+     * <p>
+     * Placing is the expensive half and is what the ticks are for. A pillar is the whole height of
+     * the world - three hundred and eighty-four blocks in the overworld - so at
+     * {@link #COLUMNS_PER_TICK} the job runs at about the chunk fill's thousand writes a tick, and
+     * the pillars visibly grow in one after another rather than appearing together.
+     */
+    private static final class Pillars implements Job {
+        /** Pillars raised per tick. Each is a full world column, so this is the whole budget. */
+        private static final int COLUMNS_PER_TICK = 3;
+
+        private final ResourceKey<Level> dimension;
+        private final BlockState fill;
+        private final List<BlockPos> columns;
+        private int next;
+
+        private Pillars(ResourceKey<Level> dimension, BlockPos origin, int radius, int chance,
+                        BlockState fill, RandomSource random) {
+            this.dimension = dimension;
+            this.fill = fill;
+
+            List<BlockPos> columns = new ArrayList<>();
+            int radiusSqr = radius * radius;
+
+            for (int x = -radius; x <= radius; x++) {
+                for (int z = -radius; z <= radius; z++) {
+                    if (x * x + z * z <= radiusSqr && random.nextInt(chance) == 0) {
+                        columns.add(new BlockPos(origin.getX() + x, 0, origin.getZ() + z));
+                    }
+                }
+            }
+
+            this.columns = columns;
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            int last = Math.min(this.next + COLUMNS_PER_TICK, this.columns.size());
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+
+            for (; this.next < last; this.next++) {
+                BlockPos column = this.columns.get(this.next);
+
+                for (int y = level.getMinBuildHeight(); y < level.getMaxBuildHeight(); y++) {
+                    pos.set(column.getX(), y, column.getZ());
+                    if (!level.isLoaded(pos)) {
+                        break;
+                    }
+
+                    // Bedrock, the world's ceiling and the hardened levels are skipped the way every
+                    // other job here skips them: a pillar is not a way through them.
+                    if (level.getBlockState(pos).getDestroySpeed(level, pos) < 0.0F) {
+                        continue;
+                    }
+
+                    level.setBlock(pos, this.fill, FLAGS);
+                }
+            }
+
+            return this.next >= this.columns.size();
+        }
+    }
+
+    /**
+     * A dome: the shell of a hemisphere, laid one horizontal ring at a time from the ground up.
+     * <p>
+     * Only the shell is written, which is what makes this affordable at all - a solid hemisphere of
+     * radius R is two thirds of pi R cubed, some sixty thousand blocks at radius 30, where its shell
+     * is nearer six thousand. The ring for a given height is every column whose distance from the
+     * middle falls inside a band {@value #THICKNESS} blocks wide, and the band is measured on the
+     * sphere's radius rather than on the horizontal one, so the shell keeps its thickness all the way
+     * over the top instead of thinning to nothing at the crown and flaring out at the base.
+     * <p>
+     * It writes over whatever is there, air included, and skips only what the world refuses to let
+     * go of - bedrock, the world's ceiling and this mod's own hardened tiers, all of which read as a
+     * destroy speed below zero. A dome built into a hillside is therefore a dome with a hill inside
+     * it, which is the honest result: this lays a shell, it does not clear a room.
+     */
+    private static final class Dome implements Job {
+        /** How thick the shell is. One block; a dome is a roof, not a bunker. */
+        private static final int THICKNESS = 1;
+
+        /** Rings per tick. One, because a ring at radius 30 is already a few hundred columns. */
+        private static final int RINGS_PER_TICK = 1;
+
+        private final ResourceKey<Level> dimension;
+        private final BlockPos origin;
+        private final int radius;
+        private final BlockState fill;
+        private int dy;
+
+        private Dome(ResourceKey<Level> dimension, BlockPos origin, int radius, BlockState fill) {
+            this.dimension = dimension;
+            this.origin = origin;
+            this.radius = radius;
+            this.fill = fill;
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+
+            for (int ring = 0; ring < RINGS_PER_TICK && this.dy <= this.radius; ring++, this.dy++) {
+                layer(level, pos);
+            }
+
+            return this.dy > this.radius;
+        }
+
+        /** One horizontal ring: every column of the shell at this height. */
+        private void layer(ServerLevel level, BlockPos.MutableBlockPos pos) {
+            // How far out the shell sits at this height, and how far out its inner face does. Both
+            // come off the sphere, so the band between them is THICKNESS thick along the surface.
+            double outer = this.radius;
+            double inner = this.radius - THICKNESS;
+            double outerRingSq = outer * outer - (double) this.dy * this.dy;
+            double innerRingSq = inner * inner - (double) this.dy * this.dy;
+            if (outerRingSq < 0.0) {
+                return;
+            }
+
+            int reach = Mth.ceil(Math.sqrt(outerRingSq));
+
+            for (int dx = -reach; dx <= reach; dx++) {
+                for (int dz = -reach; dz <= reach; dz++) {
+                    double flatSq = (double) dx * dx + (double) dz * dz;
+                    if (flatSq > outerRingSq || flatSq < innerRingSq) {
+                        continue;
+                    }
+
+                    pos.set(this.origin.getX() + dx, this.origin.getY() + this.dy,
+                            this.origin.getZ() + dz);
+
+                    if (!level.isLoaded(pos)
+                            || level.getBlockState(pos).getDestroySpeed(level, pos) < 0.0F) {
+                        continue;
+                    }
+
+                    level.setBlock(pos, this.fill, FLAGS);
+                }
+            }
+        }
+    }
+
+    /**
+     * The Singularity, given five minutes and a curve.
+     * <p>
+     * It does the same three things that one does - drag what is loose towards the middle, tear the
+     * ground up and throw it in after them, and draw the middle - and every one of the three grows
+     * with time rather than being a constant. That is the whole difference between them, and it is
+     * what makes this a hazard rather than a shove: for the first minute it is a nuisance that a
+     * walk gets out of, and by the fifth it pulls harder than a sprint from further away than
+     * anybody notices in time.
+     * <p>
+     * The growth is geometric, {@code pow(GROWTH, progress)}, so almost all of it happens at the end
+     * rather than being spread evenly - which is what "gets stronger over time" has to mean if the
+     * first four minutes are to be survivable at all. All three are bounded by construction, because
+     * {@code progress} runs from 0 to 1 and no further: the pull ends at {@code PULL * GROWTH}, the
+     * reach at {@code RADIUS * RADIUS_GROWTH}, and the digging at {@link #MAX_BLOCKS_PER_TICK}. A
+     * radius is a query on the world and is bounded on principle, whatever is driving it.
+     * <p>
+     * The middle is a real ball of black concrete rather than a particle effect, placed once at the
+     * start and taken away at the end. It is what the thing reads as from any distance, it is why
+     * what is dragged in piles up around the middle instead of inside it, and being blocks is also
+     * why the digging skips its own core - a black hole that tore itself up would be gone inside ten
+     * seconds. Only black concrete is taken away again, so one that finished against somebody's wall
+     * does not take the wall with it.
+     */
+    private static final class BlackHole implements Job {
+        /** Five minutes. */
+        private static final int TICKS = 5 * 60 * 20;
+
+        /** How hard it pulls at the very middle on the first tick, in blocks per tick of delta. */
+        private static final double PULL = 0.02;
+
+        /** How much harder it pulls on the last tick than on the first. */
+        private static final double GROWTH = 75.0;
+
+        /** How far the pull reaches on the first tick, and how much wider it gets by the last. */
+        private static final double RADIUS = 8.0;
+        private static final double RADIUS_GROWTH = 6.0;
+
+        /** How much of the ground is torn up each tick, at the start and at the end. */
+        private static final int BLOCKS_PER_TICK = 1;
+        private static final int MAX_BLOCKS_PER_TICK = 8;
+
+        /** How far out the ground is taken from, as a fraction of the reach. */
+        private static final double DIG_FRACTION = 0.7;
+
+        /** The black ball in the middle, and the one thing the digging is not allowed to touch. */
+        private static final double CORE_RADIUS = 2.0;
+
+        /** Nothing is dragged out of the last half block, or a mob at the middle jitters. */
+        private static final double DEAD_ZONE = 0.5;
+
+        /**
+         * How wide a hole the finishing blast leaves, in blocks. Not the blast's own power, and no
+         * longer the reach the pull ended at either.
+         * <p>
+         * The power and the hole cannot be the same number and it is worth being plain about why. A
+         * blast of {@code CompressedTntEffect.SINGULARITY_POWER} would be a hole tens of thousands
+         * of blocks across; there is no writing that, deferred or otherwise, and no world to write
+         * it in. So the blast's <em>damage</em> is the full figure - vanilla's falloff is linear in
+         * the radius and reaches twice it, which is already the whole dimension and cannot be made
+         * to mean more - and the hole is the one half of this charge that can honestly get bigger.
+         * <p>
+         * That leaves the size of the hole a taste decision rather than a derivation, and this is
+         * the figure: a quarter of a kilometre across, nine million positions, and a good minute of
+         * {@link Crater} walking it. It is deliberately far past the reach the pull ended at - the
+         * black hole is what pulls you in, and this is what it leaves behind, and the second of
+         * those should be the one you can see from another chunk.
+         */
+        private static final int CRATER_RADIUS = 128;
+
+        private final ResourceKey<Level> dimension;
+        private final Vec3 centre;
+
+        /** How long this one runs for: {@link #TICKS} for the charge, far less for a collapse. */
+        private final int limit;
+
+        /**
+         * The blast it ends on, or zero for a black hole that simply stops. It is a power rather
+         * than a flag because the Singularity TNT's whole second half is that number.
+         */
+        private final float power;
+
+        private int ticks;
+
+        private BlackHole(ResourceKey<Level> dimension, Vec3 centre, int limit, float power) {
+            this.dimension = dimension;
+            this.centre = centre;
+            this.limit = limit;
+            this.power = power;
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            BlockPos origin = BlockPos.containing(this.centre);
+            if (!level.isLoaded(origin)) {
+                return true;
+            }
+
+            if (this.ticks == 0) {
+                core(level, Blocks.BLACK_CONCRETE.defaultBlockState());
+            }
+
+            double progress = (double) this.ticks / this.limit;
+            double factor = Math.pow(GROWTH, progress);
+            double radius = RADIUS * Math.pow(RADIUS_GROWTH, progress);
+
+            pull(level, PULL * factor, radius);
+            dig(level, radius * DIG_FRACTION, Math.min(MAX_BLOCKS_PER_TICK,
+                    BLOCKS_PER_TICK + (int) (progress * MAX_BLOCKS_PER_TICK)));
+
+            level.sendParticles(ParticleTypes.SMOKE, this.centre.x, this.centre.y, this.centre.z,
+                    40, CORE_RADIUS, CORE_RADIUS, CORE_RADIUS, 0.02);
+            level.sendParticles(ParticleTypes.PORTAL, this.centre.x, this.centre.y, this.centre.z,
+                    30, radius * 0.3, radius * 0.3, radius * 0.3, 0.8);
+
+            if (++this.ticks < this.limit) {
+                return false;
+            }
+
+            core(level, Blocks.AIR.defaultBlockState());
+
+            if (this.power > 0.0F) {
+                finish(level);
+            }
+
+            return true;
+        }
+
+        /**
+         * The one explosion a collapse ends on, and the hole it leaves.
+         * <p>
+         * Fired as a real explosion, so the damage, the shove, the particles and the noise are all
+         * vanilla's own and everything in the game that has an opinion about an explosion has it -
+         * armour, Protection, Blast Protection, {@code EXPLOSION_KNOCKBACK_RESISTANCE} and any other
+         * mod's reduction. The damage is left entirely alone for the same reason the power is not
+         * clamped further: vanilla's figure is {@code 7 * (radius * 2) + 1} at the centre, linear in
+         * the radius, so a blast of this power already hits for what this power ought to hit for and
+         * scaling it would be saying the same thing twice.
+         * <p>
+         * The blocks are the part that cannot be done by explosion, and there are two separate
+         * reasons rather than one. Every compression level from {@code ModBlocks.HARDENED_LEVEL} up
+         * carries an explosion resistance of three and a half million, so no power gets through one;
+         * and vanilla's block phase is sixteen cubed rays each stepping a fifth of a block, which at
+         * this radius is hundreds of millions of block reads and a set of positions to match. So the
+         * calculator here refuses the block phase outright - a resistance nothing survives kills
+         * every ray on its first step - and the hole is taken afterwards by {@link Crater}, at a
+         * size a world can hold.
+         */
+        private void finish(ServerLevel level) {
+            ExplosionDamageCalculator calculator = new ExplosionDamageCalculator() {
+                @Override
+                public Optional<Float> getBlockExplosionResistance(Explosion explosion, BlockGetter reader,
+                                                                   BlockPos pos, BlockState state,
+                                                                   FluidState fluid) {
+                    // Every ray dies on its first step, which is what makes a blast this size
+                    // affordable at all.
+                    return Optional.of(Float.MAX_VALUE);
+                }
+
+                @Override
+                public boolean shouldBlockExplode(Explosion explosion, BlockGetter reader, BlockPos pos,
+                                                  BlockState state, float power) {
+                    return false;
+                }
+            };
+
+            // The mod's own type rather than minecraft:explosion, and the only blast here that has
+            // one: it is worth several hundred thousand points, so something has to be able to say
+            // "not that one" about it without saying it about every creeper. Only the Singularity
+            // reaches this method - a plain black hole is queued with a power of zero and simply
+            // stops - so the type is exactly as narrow as it should be.
+            level.explode(null, level.damageSources().source(ModDamageTypes.SINGULARITY), calculator,
+                    this.centre.x, this.centre.y, this.centre.z, this.power, false,
+                    Level.ExplosionInteraction.NONE);
+
+            queueCrater(level, this.centre, CRATER_RADIUS);
+        }
+
+        /** Everything in reach, moved a little further in - and further every minute. */
+        private void pull(ServerLevel level, double strength, double radius) {
+            AABB reach = new AABB(this.centre, this.centre).inflate(radius);
+
+            for (Entity entity : level.getEntities((Entity) null, reach, entity -> !entity.isSpectator())) {
+                Vec3 toCentre = this.centre.subtract(entity.position());
+                double distance = toCentre.length();
+                if (distance < DEAD_ZONE || distance > radius) {
+                    continue;
+                }
+
+                double pull = strength * (1.0 - distance / radius);
+                entity.setDeltaMovement(entity.getDeltaMovement().add(toCentre.scale(pull / distance)));
+
+                // A player's own client is what actually moves them, so the server has to say so.
+                entity.hurtMarked = true;
+            }
+        }
+
+        /**
+         * A few blocks of the ground, thrown in after them. Darts rather than a walk, for the reason
+         * the Singularity throws them: the sphere is far too large to iterate and what is wanted out
+         * of it is sparse, and a cube root keeps the draw even through the volume.
+         */
+        private void dig(ServerLevel level, double radius, int count) {
+            RandomSource random = level.random;
+
+            for (int i = 0; i < count; i++) {
+                double reach = Math.cbrt(random.nextDouble()) * radius;
+
+                // Never its own core: the black hole is not allowed to eat itself.
+                if (reach <= CORE_RADIUS + 1.0) {
+                    continue;
+                }
+
+                double theta = random.nextDouble() * Math.PI * 2.0;
+                double y = random.nextDouble() * 2.0 - 1.0;
+                double ring = Math.sqrt(1.0 - y * y);
+
+                BlockPos pos = BlockPos.containing(
+                        this.centre.x + reach * ring * Math.cos(theta),
+                        this.centre.y + reach * y,
+                        this.centre.z + reach * ring * Math.sin(theta));
+
+                if (!level.isLoaded(pos)) {
+                    continue;
+                }
+
+                BlockState state = level.getBlockState(pos);
+                if (state.isAir() || !state.getFluidState().isEmpty() || state.hasBlockEntity()
+                        || state.getDestroySpeed(level, pos) < 0.0F) {
+                    continue;
+                }
+
+                FallingBlockEntity.fall(level, pos, state);
+            }
+        }
+
+        /** Writes the ball in the middle, which is the same call that takes it away again. */
+        private void core(ServerLevel level, BlockState state) {
+            BlockPos origin = BlockPos.containing(this.centre);
+            int reach = Mth.ceil(CORE_RADIUS);
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+
+            for (int dx = -reach; dx <= reach; dx++) {
+                for (int dy = -reach; dy <= reach; dy++) {
+                    for (int dz = -reach; dz <= reach; dz++) {
+                        if (dx * dx + dy * dy + dz * dz > CORE_RADIUS * CORE_RADIUS) {
+                            continue;
+                        }
+
+                        pos.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
+                        if (!level.isLoaded(pos)
+                                || level.getBlockState(pos).getDestroySpeed(level, pos) < 0.0F) {
+                            continue;
+                        }
+
+                        // Taking it away only takes away what was put there.
+                        if (state.isAir() && !level.getBlockState(pos).is(Blocks.BLACK_CONCRETE)) {
+                            continue;
+                        }
+
+                        level.setBlock(pos, state, FLAGS);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * The hole a Singularity leaves: everything inside a sphere that can be taken at all, taken.
+     * <p>
+     * The layers are walked from the bottom up so the hole opens rather than caves, but a layer is
+     * no longer a tick's work: the sphere is 256 blocks across and some nine million positions, and
+     * its widest layer alone is fifty thousand - five times what reads as a freeze. So the job
+     * carries a block budget instead and remembers which row of which layer it stopped on, which
+     * makes the crater's size a free choice rather than something the tick budget decides. It takes
+     * around a minute of real time to open, and that is the right shape for it: a hole that appears
+     * instantly is a command, and a hole that spreads is a collapse.
+     * <p>
+     * Nothing drops. This is the one job in the file with no ceiling on what it takes:
+     * {@code getDestroySpeed} below zero is bedrock, the world's roof and every other mod's
+     * unbreakable block, and everything else goes - the hardened compression levels included, which
+     * nothing else in the game moves. That is what tier 254 is: the Exploding Sword engraving cuts
+     * off at a level and this deliberately does not.
+     * <p>
+     * Written with {@link #FLAGS} the way the Flatten job writes its air, rather than through
+     * {@code destroyBlock}: at nine million positions the difference between a plain write
+     * and a full break - neighbour updates, particles, a loot roll to suppress - is the difference
+     * between a job and a stall. A container inside the sphere therefore goes with it rather than
+     * spilling, which is what flattening already does and is the honest answer here anyway: what
+     * this leaves is a hole, not a demolition site.
+     */
+    private static final class Crater implements Job {
+        /**
+         * How many positions are walked each tick. Well under the ten thousand that reads as a
+         * freeze, because unlike most jobs here nearly every position walked is also a write.
+         */
+        private static final int BLOCKS_PER_TICK = 8000;
+
+        private final ResourceKey<Level> dimension;
+        private final BlockPos centre;
+        private final int radius;
+
+        /** Where the last tick stopped: the layer, and the row within it. */
+        private int layer;
+        private int row;
+
+        private Crater(ResourceKey<Level> dimension, BlockPos centre, int radius) {
+            this.dimension = dimension;
+            this.centre = centre;
+            this.radius = radius;
+            this.layer = -radius;
+            this.row = Integer.MIN_VALUE;
+        }
+
+        @Override
+        public ResourceKey<Level> dimension() {
+            return this.dimension;
+        }
+
+        @Override
+        public boolean advance(ServerLevel level) {
+            if (!level.isLoaded(this.centre)) {
+                return true;
+            }
+
+            BlockState air = Blocks.AIR.defaultBlockState();
+            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            int budget = BLOCKS_PER_TICK;
+
+            while (budget > 0) {
+                if (this.layer > this.radius) {
+                    return true;
+                }
+
+                // The half-width of this layer's disc, off the sphere's own radius: a layer near
+                // the top or the bottom is a small circle, and only the middle one is full width.
+                double reach = Math.sqrt((double) this.radius * this.radius - (double) this.layer * this.layer);
+                int span = Mth.floor(reach);
+                double spanSqr = reach * reach;
+
+                // A layer only just begun starts at its own left edge; one resumed carries on from
+                // wherever the budget ran out last tick.
+                if (this.row == Integer.MIN_VALUE) {
+                    this.row = -span;
+                }
+
+                for (; this.row <= span && budget > 0; this.row++) {
+                    int dx = this.row;
+                    for (int dz = -span; dz <= span; dz++) {
+                        if (dx * dx + dz * dz > spanSqr) {
+                            continue;
+                        }
+
+                        budget--;
+                        pos.set(this.centre.getX() + dx, this.centre.getY() + this.layer,
+                                this.centre.getZ() + dz);
+                        if (!level.isLoaded(pos)) {
+                            continue;
+                        }
+
+                        BlockState state = level.getBlockState(pos);
+                        if (state.isAir() || state.getDestroySpeed(level, pos) < 0.0F) {
+                            continue;
+                        }
+
+                        level.setBlock(pos, air, FLAGS);
+                    }
+                }
+
+                if (this.row > span) {
+                    this.layer++;
+                    this.row = Integer.MIN_VALUE;
+                }
+            }
+
+            return this.layer > this.radius;
+        }
+    }
 }

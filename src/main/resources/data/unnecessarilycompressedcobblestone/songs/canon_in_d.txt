@@ -1,0 +1,20 @@
+# Written by tools/build_composer_songs.py. One strike per line: tick volume midi.
+# Pachelbel, Canon in D - the ground bass
+# 16 strikes over 128 ticks.
+length 128
+0 1.0 50
+8 1.0 45
+16 1.0 47
+24 1.0 42
+32 1.0 43
+40 1.0 38
+48 1.0 43
+56 1.0 45
+64 1.0 50
+72 1.0 45
+80 1.0 47
+88 1.0 42
+96 1.0 43
+104 1.0 38
+112 1.0 43
+120 1.0 45

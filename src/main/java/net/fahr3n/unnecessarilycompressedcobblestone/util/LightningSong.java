@@ -8,25 +8,28 @@ import java.util.Map;
 import java.util.Optional;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
+import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.VanillaLightningBoltEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.Mth;
 
 /**
- * A tune, as the Lightning TNT plays it: a list of strikes, each with the tick it falls on and how
- * loud it is.
+ * A tune, as lightning plays it: a list of strikes, each with the tick it falls on, how loud it is,
+ * and which piano key it strikes.
  * <p>
- * There is no pitch in it, and that is the point. Lightning has no pitch to give - vanilla rolls a
- * fresh random one for every bolt and nothing can set it - so the only thing a bolt can carry is how
- * loud it is. A song written for it is therefore a rhythm and a dynamic line, played on one note,
- * one bolt at a time.
+ * It began without that last part, and the first song here is still written without it. Lightning
+ * has no pitch of its own - vanilla rolls a fresh random one for every bolt and nothing can set it -
+ * so a song written for plain bolts is a rhythm and a dynamic line played on one note. The note
+ * bolts are what gave it pitch: each of the eighty-eight carries a real sample of that key, so a
+ * strike that names one is played on it and a strike that names none is the old, unpitched bolt.
  * <p>
  * Songs are plain text under {@code data/<namespace>/songs/<name>.txt}, one strike per line as
- * {@code tick volume}, where volume is 0 to 1 - so a song is a datapack file rather than anything
- * compiled in, and a pack can add or replace one without touching the mod. A {@code length <ticks>}
- * line sets how long the performance runs for; without one it ends on its last strike. Blank lines
- * and lines beginning with {@code #} are ignored.
+ * {@code tick volume [midi]}, where volume is 0 to 1 and {@code midi} is the key struck, 21 to 108 -
+ * so a song is a datapack file rather than anything compiled in, and a pack can add or replace one
+ * without touching the mod. A {@code length <ticks>} line sets how long the performance runs for;
+ * without one it ends on its last strike. Blank lines and lines beginning with {@code #} are
+ * ignored.
  */
 public record LightningSong(List<Note> notes, int lengthTicks) {
     /**
@@ -34,8 +37,10 @@ public record LightningSong(List<Note> notes, int lengthTicks) {
      *
      * @param tick   how long after the song starts it falls, in ticks
      * @param volume how loud, 0 to 1, where 1 is as loud as the sound engine will play anything
+     * @param key    which piano key it strikes, 0 for A0 up to 87 for C8, or
+     *               {@link VanillaLightningBoltEntity#NO_NOTE} for a bolt that plays thunder
      */
-    public record Note(int tick, float volume) {
+    public record Note(int tick, float volume, int key) {
     }
 
     /** An empty song plays nothing rather than crashing, which is what a bad file should do. */
@@ -98,7 +103,13 @@ public record LightningSong(List<Note> notes, int lengthTicks) {
                 int tick = Integer.parseInt(parts[0]);
                 float volume = Mth.clamp(Float.parseFloat(parts[1]), 0.0F, 1.0F);
 
-                notes.add(new Note(tick, volume));
+                // A line without a key is the older, pitchless kind of strike, and both kinds may
+                // sit in one file: a song can be a tune over a rhythm played in thunder.
+                int key = parts.length > 2
+                        ? PianoNote.fromMidi(Integer.parseInt(parts[2]))
+                        : VanillaLightningBoltEntity.NO_NOTE;
+
+                notes.add(new Note(tick, volume, key));
                 length = Math.max(length, tick);
             }
         } catch (Exception exception) {

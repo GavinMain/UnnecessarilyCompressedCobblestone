@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "unnecessarilycompressedcobblestone:compressed_cobblestone_130"
+    },
+    "D": {
+      "item": "minecraft:amethyst_shard"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "CDC",
+    "CCC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "unnecessarilycompressedcobblestone:lightning_sigil"
+  }
+}

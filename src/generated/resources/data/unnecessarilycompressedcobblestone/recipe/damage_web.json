@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "unnecessarilycompressedcobblestone:compressed_cobblestone_231"
+    },
+    "G": {
+      "item": "minecraft:fermented_spider_eye"
+    },
+    "X": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    "CXC",
+    "XGX",
+    "CXC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "unnecessarilycompressedcobblestone:damage_web"
+  }
+}

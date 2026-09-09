@@ -1,10 +1,10 @@
 package net.fahr3n.unnecessarilycompressedcobblestone.entity.custom;
 
-import java.util.EnumSet;
 import java.util.UUID;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.fahr3n.unnecessarilycompressedcobblestone.util.PetAi;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.world.entity.EntityType;
@@ -12,12 +12,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.ai.goal.target.TargetGoal;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
-import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.player.Player;
@@ -40,7 +35,7 @@ import net.minecraft.world.phys.Vec3;
  * and starts at the world origin, so anything spawning one of these must run {@code finalizeSpawn}
  * or it will fly off towards 0, 0 and never come back.
  */
-public class CompressedPhantomEntity extends Phantom {
+public class CompressedPhantomEntity extends Phantom implements PetAi.Pet {
     /** Fifty, against a vanilla phantom's twenty. */
     public static final float MAX_HEALTH = 50.0F;
 
@@ -74,14 +69,6 @@ public class CompressedPhantomEntity extends Phantom {
 
     /** The ceiling that keeps the scaling above from diverging, in blocks a tick. */
     private static final double MAX_SPEED = 2.4;
-
-    /**
-     * How recently a player must have hit something, or been hit, to count as in combat. Vanilla's
-     * own combat tracker forgets a fight after five seconds of nothing, and this is that number -
-     * its {@code inCombat} flag is private with no getter, so this reads the same idea off the two
-     * public timestamps instead.
-     */
-    private static final int COMBAT_MEMORY_TICKS = 100;
 
     private static final String TAG_OWNER = "owner";
     private static final String TAG_ATTACK_DAMAGE = "compressed_attack_damage";
@@ -160,7 +147,7 @@ public class CompressedPhantomEntity extends Phantom {
         this.targetSelector.removeAllGoals(goal -> true);
         // What its owner is fighting comes first, so a phantom already hunting some skeleton drops
         // it the moment the person who summoned it swings at something else.
-        this.targetSelector.addGoal(1, new OwnerCombatTargetGoal(this));
+        this.targetSelector.addGoal(1, new PetAi.OwnerCombatTargetGoal<>(this));
         // No HurtByTargetGoal to go with it: that one needs a PathfinderMob and a phantom is a
         // FlyingMob, so retaliation has to come out of the same predicate as everything else.
         //
@@ -171,109 +158,35 @@ public class CompressedPhantomEntity extends Phantom {
                 this::isEnemyOf));
     }
 
-    /** The player who summoned it, if they are still in this world. */
-    @Nullable
-    private Player ownerPlayer() {
-        return this.owner == null ? null : level().getPlayerByUUID(this.owner);
-    }
-
     /**
-     * A wolf's pair of owner goals, in one: it goes after whatever its owner last hit, and after
-     * whoever last hit its owner.
-     * <p>
-     * Vanilla's {@code OwnerHurtTargetGoal} and {@code OwnerHurtByTargetGoal} cannot be reused
-     * because both are written against {@code TamableAnimal}, which a phantom is not. The timestamps
-     * are the working part and they are public on any {@code LivingEntity}: each fight is acted on
-     * once, so a target that is given up on, or fled from, is not immediately picked up again.
-     */
-    private static final class OwnerCombatTargetGoal extends TargetGoal {
-        private final CompressedPhantomEntity phantom;
-        @Nullable
-        private LivingEntity found;
-        private int timestamp;
-
-        private OwnerCombatTargetGoal(CompressedPhantomEntity phantom) {
-            super(phantom, false);
-            this.phantom = phantom;
-            setFlags(EnumSet.of(Goal.Flag.TARGET));
-        }
-
-        @Override
-        public boolean canUse() {
-            Player owner = this.phantom.ownerPlayer();
-            if (owner == null) {
-                return false;
-            }
-
-            // Whichever of the two happened later is the fight it joins.
-            LivingEntity struck = owner.getLastHurtMob();
-            LivingEntity attacker = owner.getLastHurtByMob();
-            int struckAt = owner.getLastHurtMobTimestamp();
-            int attackedAt = owner.getLastHurtByMobTimestamp();
-
-            if (attacker != null && (struck == null || attackedAt >= struckAt)) {
-                this.found = attacker;
-                this.timestamp = attackedAt;
-            } else if (struck != null) {
-                this.found = struck;
-                this.timestamp = struckAt;
-            } else {
-                return false;
-            }
-
-            return this.timestamp != this.phantom.lastOwnerFight
-                    && this.found != this.phantom
-                    && !(this.found instanceof CompressedPhantomEntity)
-                    && this.found != owner
-                    && canAttack(this.found, TargetingConditions.DEFAULT);
-        }
-
-        @Override
-        public void start() {
-            this.mob.setTarget(this.found);
-            this.phantom.lastOwnerFight = this.timestamp;
-            super.start();
-        }
-    }
-
-    /**
-     * Who this phantom will go after.
+     * Who this phantom will go after, which is {@link PetAi#isEnemyOf} and nothing of its own.
      * <p>
      * With no owner it is one of the Summoner's, and it hunts players, which is what an ordinary
-     * phantom does and what the mod's rule for a non-boss hostile asks for. Anything else that
-     * attacks it is picked up by the {@link Enemy} arm of the owned case being false here - an
-     * unowned phantom simply ignores other monsters rather than fighting them.
-     * <p>
-     * With an owner it is an ally, and the rule is: any hostile mob, and a person only if that
-     * person is already in a fight. Its owner is never a target, and neither is another compressed
-     * phantom, so two flocks from different sources will ignore each other rather than tangle.
+     * phantom does and what the mod's rule for a non-boss hostile asks for. With an owner it is an
+     * ally: any hostile mob, and a person only if that person is already in a fight. Its owner is
+     * never a target, and neither is another compressed phantom, so two flocks from different
+     * sources will ignore each other rather than tangle.
      */
     private boolean isEnemyOf(LivingEntity entity) {
-        if (entity instanceof CompressedPhantomEntity || entity instanceof ArmorStand || !entity.canBeSeenAsEnemy()) {
-            return false;
-        }
-
-        if (this.owner == null) {
-            return entity instanceof Player;
-        }
-
-        if (entity instanceof Player player) {
-            return !player.getUUID().equals(this.owner) && isInCombat(player);
-        }
-
-        return entity instanceof Enemy;
+        return PetAi.isEnemyOf(this, this, entity);
     }
 
-    /**
-     * Whether {@code entity} has hit something, or been hit, recently enough to still be fighting.
-     * {@code CombatTracker} knows this exactly but keeps it to itself, so this reads the two public
-     * timestamps {@code LivingEntity} does expose.
-     */
-    private static boolean isInCombat(LivingEntity entity) {
-        int now = entity.tickCount;
+    /* WHAT MAKES IT A PET - see PetAi, which owns both goals written against these three. */
 
-        return (entity.getLastHurtByMob() != null && now - entity.getLastHurtByMobTimestamp() <= COMBAT_MEMORY_TICKS)
-                || (entity.getLastHurtMob() != null && now - entity.getLastHurtMobTimestamp() <= COMBAT_MEMORY_TICKS);
+    @Nullable
+    @Override
+    public UUID petOwner() {
+        return this.owner;
+    }
+
+    @Override
+    public int lastOwnerFight() {
+        return this.lastOwnerFight;
+    }
+
+    @Override
+    public void setLastOwnerFight(int timestamp) {
+        this.lastOwnerFight = timestamp;
     }
 
     /** Who summoned it, which is what turns it from a monster into an ally. */

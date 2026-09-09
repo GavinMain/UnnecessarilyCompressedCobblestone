@@ -21,6 +21,22 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("engraving_table_be", () -> BlockEntityType.Builder.of(
                     EngravingTableBlockEntity::new, ModBlocks.ENGRAVING_TABLE.get()).build(null));
 
+    public static final Supplier<BlockEntityType<LaserAugmentationTableBlockEntity>> LASER_AUGMENTATION_TABLE_BE =
+            BLOCK_ENTITIES.register("laser_augmentation_table_be", () -> BlockEntityType.Builder.of(
+                    LaserAugmentationTableBlockEntity::new, ModBlocks.LASER_AUGMENTATION_TABLE.get()).build(null));
+
+    public static final Supplier<BlockEntityType<CompositionTableBlockEntity>> COMPOSITION_TABLE_BE =
+            BLOCK_ENTITIES.register("composition_table_be", () -> BlockEntityType.Builder.of(
+                    CompositionTableBlockEntity::new, ModBlocks.COMPOSITION_TABLE.get()).build(null));
+
+    /**
+     * One per gate, and only on its lower half - the upper half of a gate has no block entity at
+     * all, which is what keeps a two-block doorway one gate rather than two.
+     */
+    public static final Supplier<BlockEntityType<TeleportationGateBlockEntity>> TELEPORTATION_GATE_BE =
+            BLOCK_ENTITIES.register("teleportation_gate_be", () -> BlockEntityType.Builder.of(
+                    TeleportationGateBlockEntity::new, ModBlocks.TELEPORTATION_GATE.get()).build(null));
+
     /** What a Lightning Core is holding, and the strikes it makes while it is powered. */
     public static final Supplier<BlockEntityType<LightningCoreBlockEntity>> LIGHTNING_CORE_BE =
             BLOCK_ENTITIES.register("lightning_core_be", () -> BlockEntityType.Builder.of(
@@ -36,7 +52,9 @@ public class ModBlockEntities {
                     MaterialCompressorBlockEntity::new,
                     ModBlocks.MATERIAL_COMPRESSOR_TIER_1.get(),
                     ModBlocks.MATERIAL_COMPRESSOR_TIER_2.get(),
-                    ModBlocks.MATERIAL_COMPRESSOR_TIER_3.get()).build(null));
+                    ModBlocks.MATERIAL_COMPRESSOR_TIER_3.get(),
+                    ModBlocks.MATERIAL_COMPRESSOR_TIER_4.get(),
+                    ModBlocks.MATERIAL_COMPRESSOR_TIER_5.get()).build(null));
 
     public static void register(IEventBus eventBus) {
         BLOCK_ENTITIES.register(eventBus);

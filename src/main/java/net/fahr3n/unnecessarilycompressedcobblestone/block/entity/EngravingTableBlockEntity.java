@@ -8,6 +8,7 @@ import net.fahr3n.unnecessarilycompressedcobblestone.util.Engraving;
 import net.fahr3n.unnecessarilycompressedcobblestone.util.Engravings;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
@@ -20,6 +21,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -107,8 +109,19 @@ public class EngravingTableBlockEntity extends BlockEntity implements MenuProvid
             return;
         }
 
-        Engraving engraving = EngravingItem.of(itemHandler.getStackInSlot(ENGRAVING_SLOT));
-        Engravings.add(itemHandler.getStackInSlot(GEAR_SLOT), engraving);
+        ItemStack gear = itemHandler.getStackInSlot(GEAR_SLOT);
+        ItemStack engravingStack = itemHandler.getStackInSlot(ENGRAVING_SLOT);
+        Engraving engraving = EngravingItem.of(engravingStack);
+        Engravings.add(gear, engraving);
+
+        // The Potion Engraving is the one that carries something of its own, and the gear's
+        // engraving component is a bare list of constants with nowhere to put it - so the potion
+        // rides along on the gear as ordinary potion contents, and comes back off with it below.
+        PotionContents contents = engravingStack.get(DataComponents.POTION_CONTENTS);
+        if (contents != null) {
+            gear.set(DataComponents.POTION_CONTENTS, contents);
+        }
+
         itemHandler.setStackInSlot(ENGRAVING_SLOT, ItemStack.EMPTY);
         setChanged();
     }
@@ -122,11 +135,24 @@ public class EngravingTableBlockEntity extends BlockEntity implements MenuProvid
             return;
         }
 
-        Engraving removed = Engravings.removeLast(itemHandler.getStackInSlot(GEAR_SLOT));
-        if (removed != null) {
-            itemHandler.setStackInSlot(ENGRAVING_SLOT, new ItemStack(removed.item()));
-            setChanged();
+        ItemStack gear = itemHandler.getStackInSlot(GEAR_SLOT);
+        Engraving removed = Engravings.removeLast(gear);
+        if (removed == null) {
+            return;
         }
+
+        ItemStack engravingStack = new ItemStack(removed.item());
+
+        // Whatever the engraving brought with it goes back onto it, so nothing is lost either way
+        // round - which is the whole point of the system.
+        PotionContents contents = gear.get(DataComponents.POTION_CONTENTS);
+        if (contents != null) {
+            engravingStack.set(DataComponents.POTION_CONTENTS, contents);
+            gear.remove(DataComponents.POTION_CONTENTS);
+        }
+
+        itemHandler.setStackInSlot(ENGRAVING_SLOT, engravingStack);
+        setChanged();
     }
 
     @Override

@@ -1,0 +1,19 @@
+# Written by tools/build_composer_songs.py. One strike per line: tick volume midi.
+# Beethoven, Symphony No. 9 - Ode to Joy
+# 15 strikes over 128 ticks.
+length 128
+0 1.0 64
+8 1.0 64
+16 1.0 65
+24 1.0 67
+32 1.0 67
+40 1.0 65
+48 1.0 64
+56 1.0 62
+64 1.0 60
+72 1.0 60
+80 1.0 62
+88 1.0 64
+96 1.0 64
+108 1.0 62
+112 1.0 62

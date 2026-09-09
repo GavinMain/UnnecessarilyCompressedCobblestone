@@ -255,10 +255,16 @@
     "unnecessarilycompressedcobblestone:compressed_cobblestone_253",
     "unnecessarilycompressedcobblestone:compressed_cobblestone_254",
     "unnecessarilycompressedcobblestone:compressed_cobblestone_255",
+    "unnecessarilycompressedcobblestone:dev_compressed_cobblestone",
     "unnecessarilycompressedcobblestone:material_compressor_tier_1",
     "unnecessarilycompressedcobblestone:material_compressor_tier_2",
     "unnecessarilycompressedcobblestone:material_compressor_tier_3",
+    "unnecessarilycompressedcobblestone:material_compressor_tier_4",
+    "unnecessarilycompressedcobblestone:material_compressor_tier_5",
     "unnecessarilycompressedcobblestone:engraving_table",
+    "unnecessarilycompressedcobblestone:composition_table",
+    "unnecessarilycompressedcobblestone:laser_augmentation_table",
+    "unnecessarilycompressedcobblestone:teleportation_gate",
     "unnecessarilycompressedcobblestone:lightning_core"
   ]
 }

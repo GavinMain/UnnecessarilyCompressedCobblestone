@@ -87,7 +87,8 @@ public class LightningCoreBlockEntity extends BlockEntity {
 
         this.cooldown = STRIKE_INTERVAL;
         if (this.bolt.getItem() instanceof BoltItem boltItem) {
-            boltItem.strike(serverLevel, pos, signal);
+            // One block up, so what the strike hits is whatever is standing on the core.
+            boltItem.strike(serverLevel, pos.above(), this.bolt, signal, 0.0F);
         }
     }
 

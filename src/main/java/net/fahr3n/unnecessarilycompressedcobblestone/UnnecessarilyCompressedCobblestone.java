@@ -12,8 +12,11 @@ import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModArmorMaterials;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModCreativeModeTabs;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
+import net.fahr3n.unnecessarilycompressedcobblestone.potion.ModMobEffects;
 import net.fahr3n.unnecessarilycompressedcobblestone.potion.ModPotions;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.ModMenuTypes;
+import net.fahr3n.unnecessarilycompressedcobblestone.sound.ModSounds;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.ModAttributeCeilings;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -35,6 +38,11 @@ public class UnnecessarilyCompressedCobblestone {
     // The constructor for the mod class is the first code that is run when your mod is loaded.
     // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
     public UnnecessarilyCompressedCobblestone(IEventBus modEventBus, ModContainer modContainer) {
+        // First, and it has to be first: an entity's attributes are clamped to the ceiling standing
+        // when its supplier is built, so a boss registered before this line keeps vanilla's 1024
+        // health however high the ceiling goes afterwards.
+        ModAttributeCeilings.raise();
+
         // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
@@ -47,11 +55,13 @@ public class UnnecessarilyCompressedCobblestone {
         ModBlocks.register(modEventBus);
         ModArmorMaterials.register(modEventBus);
         ModEnchantmentEffects.register(modEventBus);
+        ModMobEffects.register(modEventBus);
         ModPotions.register(modEventBus);
         ModEntities.register(modEventBus);
         ModBlockEntities.register(modEventBus);
         ModDataComponents.register(modEventBus);
         ModMenuTypes.register(modEventBus);
+        ModSounds.register(modEventBus);
 
         // Register the item to a creative tab
         modEventBus.addListener(this::addCreative);

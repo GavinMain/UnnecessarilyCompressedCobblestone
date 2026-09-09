@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "unnecessarilycompressedcobblestone:compressed_cobblestone_200"
+    },
+    "S": {
+      "item": "minecraft:stick"
+    }
+  },
+  "pattern": [
+    "CSC",
+    "CCC",
+    " C "
+  ],
+  "result": {
+    "count": 1,
+    "id": "unnecessarilycompressedcobblestone:compressed_shield"
+  }
+}

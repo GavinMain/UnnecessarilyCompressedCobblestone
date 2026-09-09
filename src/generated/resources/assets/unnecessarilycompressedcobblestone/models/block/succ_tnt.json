@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "unnecessarilycompressedcobblestone:block/succ_tnt_bottom",
+    "side": "unnecessarilycompressedcobblestone:block/succ_tnt_side",
+    "top": "unnecessarilycompressedcobblestone:block/succ_tnt_top"
+  }
+}

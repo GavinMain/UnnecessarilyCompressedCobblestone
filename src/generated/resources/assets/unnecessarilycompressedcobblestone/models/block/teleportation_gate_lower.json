@@ -1,0 +1,42 @@
+{
+  "parent": "minecraft:block/block",
+  "elements": [
+    {
+      "faces": {
+        "down": {
+          "texture": "#gate"
+        },
+        "east": {
+          "texture": "#gate"
+        },
+        "north": {
+          "texture": "#gate"
+        },
+        "south": {
+          "texture": "#gate"
+        },
+        "up": {
+          "texture": "#gate"
+        },
+        "west": {
+          "texture": "#gate"
+        }
+      },
+      "from": [
+        0,
+        0,
+        6
+      ],
+      "to": [
+        16,
+        16,
+        10
+      ]
+    }
+  ],
+  "render_type": "minecraft:translucent",
+  "textures": {
+    "gate": "unnecessarilycompressedcobblestone:block/teleportation_gate_lower",
+    "particle": "unnecessarilycompressedcobblestone:block/teleportation_gate_lower"
+  }
+}

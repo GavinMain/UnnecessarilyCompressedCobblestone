@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "unnecessarilycompressedcobblestone:compressed_cobblestone_234"
+    },
+    "G": {
+      "item": "minecraft:glistering_melon_slice"
+    }
+  },
+  "pattern": [
+    "  G",
+    " C ",
+    "C  "
+  ],
+  "result": {
+    "count": 1,
+    "id": "unnecessarilycompressedcobblestone:compressed_healing_staff"
+  }
+}

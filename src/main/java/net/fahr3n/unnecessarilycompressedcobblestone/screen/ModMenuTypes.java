@@ -2,8 +2,11 @@ package net.fahr3n.unnecessarilycompressedcobblestone.screen;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.CompressionInscriberMenu;
+import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.CompositionTableMenu;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.EngravingTableMenu;
+import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.LaserAugmentationTableMenu;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.MaterialCompressorMenu;
+import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.TeleportationGateMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -25,6 +28,16 @@ public class ModMenuTypes {
 
     public static final DeferredHolder<MenuType<?>, MenuType<EngravingTableMenu>> ENGRAVING_TABLE_MENU =
             registerMenuType("engraving_table_menu", EngravingTableMenu::new);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<LaserAugmentationTableMenu>> LASER_AUGMENTATION_TABLE_MENU =
+            registerMenuType("laser_augmentation_table_menu", LaserAugmentationTableMenu::new);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<CompositionTableMenu>> COMPOSITION_TABLE_MENU =
+            registerMenuType("composition_table_menu", CompositionTableMenu::new);
+
+    /** Two lines of text and a button; the gate has no slots. */
+    public static final DeferredHolder<MenuType<?>, MenuType<TeleportationGateMenu>> TELEPORTATION_GATE_MENU =
+            registerMenuType("teleportation_gate_menu", TeleportationGateMenu::new);
 
     private static <T extends AbstractContainerMenu> DeferredHolder<MenuType<?>, MenuType<T>> registerMenuType(
             String name, IContainerFactory<T> factory) {

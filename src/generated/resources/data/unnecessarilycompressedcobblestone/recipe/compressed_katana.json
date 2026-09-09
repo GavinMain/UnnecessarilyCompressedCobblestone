@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "unnecessarilycompressedcobblestone:compressed_cobblestone_157"
+    },
+    "H": {
+      "item": "unnecessarilycompressedcobblestone:tier_11_compressed_heart"
+    }
+  },
+  "pattern": [
+    "  C",
+    " C ",
+    "H  "
+  ],
+  "result": {
+    "count": 1,
+    "id": "unnecessarilycompressedcobblestone:compressed_katana"
+  }
+}

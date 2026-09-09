@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "unnecessarilycompressedcobblestone:compressed_cobblestone_179"
+    },
+    "H": {
+      "item": "unnecessarilycompressedcobblestone:tier_14_compressed_heart"
+    }
+  },
+  "pattern": [
+    "  H",
+    " C ",
+    "C  "
+  ],
+  "result": {
+    "count": 1,
+    "id": "unnecessarilycompressedcobblestone:ray_of_laser"
+  }
+}

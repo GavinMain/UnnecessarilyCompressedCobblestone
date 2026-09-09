@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "unnecessarilycompressedcobblestone:item/extra_shot_engraving"
+  }
+}

@@ -1,0 +1,794 @@
+{
+  "note.a_0": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_0",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_sharp_0": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_sharp_0",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.b_0": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/b_0",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_1": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_1",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_sharp_1": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_sharp_1",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_1": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_1",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_sharp_1": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_sharp_1",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.e_1": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/e_1",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_1": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_1",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_sharp_1": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_sharp_1",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_1": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_1",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_sharp_1": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_sharp_1",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_1": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_1",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_sharp_1": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_sharp_1",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.b_1": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/b_1",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_2": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_2",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_sharp_2": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_sharp_2",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_2": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_2",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_sharp_2": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_sharp_2",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.e_2": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/e_2",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_2": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_2",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_sharp_2": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_sharp_2",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_2": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_2",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_sharp_2": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_sharp_2",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_2": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_2",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_sharp_2": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_sharp_2",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.b_2": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/b_2",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_3": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_3",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_sharp_3": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_sharp_3",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_3": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_3",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_sharp_3": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_sharp_3",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.e_3": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/e_3",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_3": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_3",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_sharp_3": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_sharp_3",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_3": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_3",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_sharp_3": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_sharp_3",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_3": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_3",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_sharp_3": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_sharp_3",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.b_3": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/b_3",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_4": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_4",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_sharp_4": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_sharp_4",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_4": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_4",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_sharp_4": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_sharp_4",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.e_4": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/e_4",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_4": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_4",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_sharp_4": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_sharp_4",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_4": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_4",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_sharp_4": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_sharp_4",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_4": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_4",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_sharp_4": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_sharp_4",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.b_4": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/b_4",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_5": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_5",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_sharp_5": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_sharp_5",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_5": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_5",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_sharp_5": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_sharp_5",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.e_5": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/e_5",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_5": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_5",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_sharp_5": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_sharp_5",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_5": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_5",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_sharp_5": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_sharp_5",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_5": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_5",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_sharp_5": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_sharp_5",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.b_5": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/b_5",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_6": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_6",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_sharp_6": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_sharp_6",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_6": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_6",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_sharp_6": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_sharp_6",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.e_6": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/e_6",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_6": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_6",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_sharp_6": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_sharp_6",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_6": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_6",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_sharp_6": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_sharp_6",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_6": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_6",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_sharp_6": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_sharp_6",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.b_6": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/b_6",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_7": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_7",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_sharp_7": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_sharp_7",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_7": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_7",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.d_sharp_7": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/d_sharp_7",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.e_7": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/e_7",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_7": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_7",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.f_sharp_7": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/f_sharp_7",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_7": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_7",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.g_sharp_7": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/g_sharp_7",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_7": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_7",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.a_sharp_7": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/a_sharp_7",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.b_7": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/b_7",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  },
+  "note.c_8": {
+    "sounds": [
+      {
+        "name": "unnecessarilycompressedcobblestone:note/c_8",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.unnecessarilycompressedcobblestone.note"
+  }
+}

@@ -4,6 +4,7 @@ import java.util.Set;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
 import net.fahr3n.unnecessarilycompressedcobblestone.block.ModBlocks;
+import net.fahr3n.unnecessarilycompressedcobblestone.block.custom.TeleportationGateBlock;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -14,6 +15,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -37,15 +39,36 @@ public class ModBlockLootTableProvider extends BlockLootSubProvider {
         }
 
         dropSelf(ModBlocks.CARVED_COBBLESTONE_TIER_1.get());
+        dropSelf(ModBlocks.CARVED_COBBLESTONE_TIER_2.get());
+        dropSelf(ModBlocks.CARVED_COBBLESTONE_TIER_3.get());
         dropSelf(ModBlocks.COMPRESSION_INSCRIBER.get());
         dropSelf(ModBlocks.ENGRAVING_TABLE.get());
+        dropSelf(ModBlocks.COMPOSITION_TABLE.get());
+        dropSelf(ModBlocks.LASER_AUGMENTATION_TABLE.get());
+
+        // One gate is two blocks, so a plain dropSelf would hand back two items - the same reason
+        // vanilla's doors and tall flowers condition their table on the lower half.
+        add(ModBlocks.TELEPORTATION_GATE.get(), createSinglePropConditionTable(
+                ModBlocks.TELEPORTATION_GATE.get(), TeleportationGateBlock.HALF, DoubleBlockHalf.LOWER));
         dropSelf(ModBlocks.LIGHTNING_CORE.get());
         dropSelf(ModBlocks.MATERIAL_COMPRESSOR_TIER_1.get());
         dropSelf(ModBlocks.MATERIAL_COMPRESSOR_TIER_2.get());
         dropSelf(ModBlocks.MATERIAL_COMPRESSOR_TIER_3.get());
+        dropSelf(ModBlocks.MATERIAL_COMPRESSOR_TIER_4.get());
+        dropSelf(ModBlocks.MATERIAL_COMPRESSOR_TIER_5.get());
         ModBlocks.TNTS.forEach(tnt -> dropSelf(tnt.get()));
 
         dropSelf(ModBlocks.COMPRESSED_COBBLESTONE_SAPLING.get());
+
+        // Unlike vanilla's cobweb, which needs shears or a sword, this one comes back to anything -
+        // see ModBlocks.webProperties for why that is a property rather than a loot condition.
+        dropSelf(ModBlocks.REGEN_WEB.get());
+        dropSelf(ModBlocks.DAMAGE_WEB.get());
+
+        // Vanilla's ice needs Silk Touch or it melts away; this drops itself to anything, since the
+        // Debris TNT lays a field of it and picking that field back up is the point of it.
+        dropSelf(ModBlocks.SLIPPERY_ICE.get());
+        dropSelf(ModBlocks.DEV_COMPRESSED_COBBLESTONE.get());
         add(ModBlocks.COMPRESSED_COBBLESTONE_LEAVES.get(),
                 createCompressedLeavesDrops(ModBlocks.COMPRESSED_COBBLESTONE_LEAVES.get(),
                         ModBlocks.COMPRESSED_COBBLESTONE_SAPLING.get()));

@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_compressed_cobblestone_112": {
+      "conditions": {
+        "items": [
+          {
+            "items": "unnecessarilycompressedcobblestone:compressed_cobblestone_112"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "unnecessarilycompressedcobblestone:elytra_engraving"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_compressed_cobblestone_112"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "unnecessarilycompressedcobblestone:elytra_engraving"
+    ]
+  }
+}

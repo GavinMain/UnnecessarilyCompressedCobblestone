@@ -1,7 +1,7 @@
 """Derives the gear textures that are not drawn by hand.
 
-Four things, all off art the mod already ships: the tier 1 heart (tier 2's drawing with a red
-core), the tier 1 apple (tier 2's drawing warmed and darkened), the jump/lightning/arrow armour sets (the compressed set with its black line network taken
+Five things, all off art the mod already ships: the tier 1 and tier 8 hearts (tier 2's drawing with
+a red and a soul-blue core), the tier 1 apple (tier 2's drawing warmed and darkened), the jump/lightning/arrow armour sets (the compressed set with its black line network taken
 to a hue - green, yellow, grey), and the three weapons (vanilla stone gear with black seams cut
 across it). Run with APPLY=1 to write into the mod; without it everything and a contact sheet go
 to build/gear_preview/ instead.
@@ -36,6 +36,61 @@ for y in range(6, 10):
     for x in range(6, 10):
         h.putpixel((x, y), CORE_LIT if 7 <= x <= 8 and 7 <= y <= 8 else CORE)
 emit("item/tier_1_compressed_heart.png", h)
+
+# The Compressed Spirit's heart, the eighth of the family and the same drawing again: the soul-fire
+# blue-green of the spirit itself, which is also what its egg is coloured. That makes eight hearts
+# that are one drawing in eight cores, which TEXTURE.md has been asking to fix since the third.
+SPIRIT_CORE, SPIRIT_CORE_LIT = (0x6b, 0xe3, 0xe8, 255), (0xd6, 0xfa, 0xfc, 255)
+h = heart.copy()
+for y in range(6, 10):
+    for x in range(6, 10):
+        h.putpixel((x, y), SPIRIT_CORE_LIT if 7 <= x <= 8 and 7 <= y <= 8 else SPIRIT_CORE)
+emit("item/tier_8_compressed_heart.png", h)
+
+# And the second golem's, the ninth: the yellow of its boss bar.
+GOLEM_2_CORE, GOLEM_2_CORE_LIT = (0xf2, 0xd1, 0x3b, 255), (0xff, 0xf3, 0xc4, 255)
+h = heart.copy()
+for y in range(6, 10):
+    for x in range(6, 10):
+        h.putpixel((x, y), GOLEM_2_CORE_LIT if 7 <= x <= 8 and 7 <= y <= 8 else GOLEM_2_CORE)
+emit("item/tier_9_compressed_heart.png", h)
+
+# And the Compressed Witch's, the tenth: witch purple.
+WITCH_CORE, WITCH_CORE_LIT = (0xb0, 0x50, 0xd0, 255), (0xee, 0xcc, 0xff, 255)
+h = heart.copy()
+for y in range(6, 10):
+    for x in range(6, 10):
+        h.putpixel((x, y), WITCH_CORE_LIT if 7 <= x <= 8 and 7 <= y <= 8 else WITCH_CORE)
+emit("item/tier_10_compressed_heart.png", h)
+
+
+# And the Compressed Guardian's, the fourteenth: prismarine teal, the colour of the thing itself.
+GUARDIAN_CORE, GUARDIAN_CORE_LIT = (0x3f, 0xa0, 0x96, 255), (0xba, 0xf5, 0xea, 255)
+h = heart.copy()
+for y in range(6, 10):
+    for x in range(6, 10):
+        h.putpixel((x, y), GUARDIAN_CORE_LIT if 7 <= x <= 8 and 7 <= y <= 8 else GUARDIAN_CORE)
+emit("item/tier_14_compressed_heart.png", h)
+
+
+# And the Compressed Husk's, the fifteenth: the pale dry sand of the desert it comes out of. That is
+# now seven of the fifteen hearts that are one drawing in seven cores, which TEXTURE.md has been
+# asking to fix since the third and which this rung makes no better.
+HUSK_CORE, HUSK_CORE_LIT = (0xc2, 0xa8, 0x66, 255), (0xf2, 0xe6, 0xc4, 255)
+h = heart.copy()
+for y in range(6, 10):
+    for x in range(6, 10):
+        h.putpixel((x, y), HUSK_CORE_LIT if 7 <= x <= 8 and 7 <= y <= 8 else HUSK_CORE)
+emit("item/tier_15_compressed_heart.png", h)
+
+# And the Compressed Snow Golem's, the sixteenth: the pale blue-white of the thing itself. Eight of
+# the sixteen hearts are now one drawing in eight cores.
+SNOW_GOLEM_CORE, SNOW_GOLEM_CORE_LIT = (0xa8, 0xc8, 0xe0, 255), (0xee, 0xf6, 0xff, 255)
+h = heart.copy()
+for y in range(6, 10):
+    for x in range(6, 10):
+        h.putpixel((x, y), SNOW_GOLEM_CORE_LIT if 7 <= x <= 8 and 7 <= y <= 8 else SNOW_GOLEM_CORE)
+emit("item/tier_16_compressed_heart.png", h)
 
 
 # ---------------------------------------------------------------- 1b. apple tier 1
@@ -76,6 +131,12 @@ SETS = {
     "compression_jump":      (120, 0.85, 0.30, 0.78),   # green lines
     "compression_lightning": (48, 0.95, 0.34, 0.86),    # yellow lines
     "compression_arrow":     (0, 0.0, 0.22, 0.55),      # grey lines
+    "compression_magic":     (285, 0.80, 0.32, 0.84),   # violet lines
+    "compression_rain":      (205, 0.85, 0.30, 0.82),   # rain blue lines
+    # The last set, and the last hue left that reads as its own at inventory size: everything else
+    # here is green, yellow, grey, violet or blue, so red is the one that cannot be mistaken for a
+    # neighbour.
+    "ultimate_compressed":   (0, 0.90, 0.34, 0.88),     # red lines
 }
 PIECES = ["helmet", "chestplate", "leggings", "boots"]
 

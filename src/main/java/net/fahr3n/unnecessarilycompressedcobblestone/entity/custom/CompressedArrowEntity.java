@@ -1,5 +1,8 @@
 package net.fahr3n.unnecessarilycompressedcobblestone.entity.custom;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jetbrains.annotations.Nullable;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.util.CompressionEnergy;
@@ -8,6 +11,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.AbstractArrow;
@@ -34,6 +40,8 @@ public class CompressedArrowEntity extends AbstractArrow {
     private static final String TAG_RAIN_VELOCITY = "rain_velocity";
     private static final String TAG_RAIN_TNT = "rain_tnt";
     private static final String TAG_RAIN_SPIRAL = "rain_spiral";
+    private static final String TAG_RAIN_EFFECTS = "rain_effects";
+    private static final String TAG_EFFECTS = "compressed_effects";
 
     private int despawnDelay = DEFAULT_DESPAWN_DELAY;
     private int life;
@@ -43,6 +51,15 @@ public class CompressedArrowEntity extends AbstractArrow {
     private float rainVelocity;
     private boolean rainTnt;
     private boolean rainSpiral;
+    private boolean rainEffects;
+
+    /**
+     * What this arrow puts on whatever it hits. Empty for almost every arrow in the mod - it is what
+     * the Arrow TNT Tier 2 and the Arrow 2 engraving fill in, and it is kept here rather than as a
+     * {@code minecraft:potion_contents} because these arrows are not tipped arrows: they are drawn
+     * fresh out of the effect registry per shot and belong to no potion.
+     */
+    private final List<MobEffectInstance> effects = new ArrayList<>();
 
     /** Used when the client and the save file recreate the entity; the saved damage overwrites this. */
     public CompressedArrowEntity(EntityType<? extends AbstractArrow> entityType, Level level) {
@@ -81,12 +98,14 @@ public class CompressedArrowEntity extends AbstractArrow {
      * @param arrows   how many fall in total
      * @param interval ticks between them
      * @param velocity how fast each one comes down
+     * @param effects  whether each falling arrow carries a random harmful effect
      */
-    public void markRain(int arrows, int interval, float velocity) {
+    public void markRain(int arrows, int interval, float velocity, boolean effects) {
         this.rainArrows = arrows;
         this.rainInterval = interval;
         this.rainVelocity = velocity;
         this.rainTnt = false;
+        this.rainEffects = effects;
     }
 
     /**
@@ -116,10 +135,39 @@ public class CompressedArrowEntity extends AbstractArrow {
                         this.rainVelocity, cause, this.rainSpiral);
             } else {
                 DeferredStrikes.queueArrowRain(serverLevel, struck, this.rainArrows, this.rainInterval,
-                        this.rainVelocity, cause);
+                        this.rainVelocity, cause, this.rainEffects);
             }
 
             this.rainArrows = 0;
+        }
+    }
+
+    /**
+     * Gives this arrow an effect to carry into whatever it hits. More than one may be added; they
+     * all land.
+     */
+    public void addEffect(MobEffectInstance effect) {
+        this.effects.add(effect);
+    }
+
+    /**
+     * Whatever this arrow was given, put on what it hit. It is the same path a tipped arrow takes -
+     * vanilla's {@code Arrow.doPostHurtEffects} - including the rule that an instantaneous effect
+     * has to be applied rather than added, since adding one puts a zero-length effect on and does
+     * nothing.
+     */
+    @Override
+    protected void doPostHurtEffects(LivingEntity target) {
+        super.doPostHurtEffects(target);
+
+        Entity source = getEffectSource();
+        for (MobEffectInstance effect : this.effects) {
+            if (effect.getEffect().value().isInstantenous()) {
+                effect.getEffect().value().applyInstantenousEffect(this, source, target,
+                        effect.getAmplifier(), 1.0);
+            } else {
+                target.addEffect(new MobEffectInstance(effect), source);
+            }
         }
     }
 
@@ -143,6 +191,16 @@ public class CompressedArrowEntity extends AbstractArrow {
         }
     }
 
+    /**
+     * Weight, which is a tier's business rather than every arrow's: the Hyper Compressed Arrow falls
+     * twenty times as fast as anything else in the game, and the other two fall exactly as vanilla's
+     * do. Read off the type through {@link #tier()} for the same reason the base damage is.
+     */
+    @Override
+    protected double getDefaultGravity() {
+        return tier().gravity();
+    }
+
     @Override
     public void addAdditionalSaveData(CompoundTag compound) {
         super.addAdditionalSaveData(compound);
@@ -153,6 +211,16 @@ public class CompressedArrowEntity extends AbstractArrow {
         compound.putFloat(TAG_RAIN_VELOCITY, this.rainVelocity);
         compound.putBoolean(TAG_RAIN_TNT, this.rainTnt);
         compound.putBoolean(TAG_RAIN_SPIRAL, this.rainSpiral);
+        compound.putBoolean(TAG_RAIN_EFFECTS, this.rainEffects);
+
+        if (!this.effects.isEmpty()) {
+            ListTag saved = new ListTag();
+            for (MobEffectInstance effect : this.effects) {
+                saved.add(effect.save());
+            }
+
+            compound.put(TAG_EFFECTS, saved);
+        }
     }
 
     @Override
@@ -168,6 +236,16 @@ public class CompressedArrowEntity extends AbstractArrow {
         this.rainVelocity = compound.getFloat(TAG_RAIN_VELOCITY);
         this.rainTnt = compound.getBoolean(TAG_RAIN_TNT);
         this.rainSpiral = compound.getBoolean(TAG_RAIN_SPIRAL);
+        this.rainEffects = compound.getBoolean(TAG_RAIN_EFFECTS);
+
+        this.effects.clear();
+        ListTag saved = compound.getList(TAG_EFFECTS, Tag.TAG_COMPOUND);
+        for (int i = 0; i < saved.size(); i++) {
+            MobEffectInstance effect = MobEffectInstance.load(saved.getCompound(i));
+            if (effect != null) {
+                this.effects.add(effect);
+            }
+        }
     }
 
     /** What the arrow turns back into when it is picked up. */

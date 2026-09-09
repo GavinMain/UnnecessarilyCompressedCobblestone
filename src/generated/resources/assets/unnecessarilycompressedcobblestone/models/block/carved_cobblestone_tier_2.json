@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "unnecessarilycompressedcobblestone:block/carved_cobblestone_tier_2",
+    "side": "unnecessarilycompressedcobblestone:block/compressed_cobblestone_115",
+    "top": "unnecessarilycompressedcobblestone:block/compressed_cobblestone_115"
+  }
+}

@@ -15,6 +15,18 @@
     "unnecessarilycompressedcobblestone:compression_arrow_helmet",
     "unnecessarilycompressedcobblestone:compression_arrow_chestplate",
     "unnecessarilycompressedcobblestone:compression_arrow_leggings",
-    "unnecessarilycompressedcobblestone:compression_arrow_boots"
+    "unnecessarilycompressedcobblestone:compression_arrow_boots",
+    "unnecessarilycompressedcobblestone:compression_magic_helmet",
+    "unnecessarilycompressedcobblestone:compression_magic_chestplate",
+    "unnecessarilycompressedcobblestone:compression_magic_leggings",
+    "unnecessarilycompressedcobblestone:compression_magic_boots",
+    "unnecessarilycompressedcobblestone:compression_rain_helmet",
+    "unnecessarilycompressedcobblestone:compression_rain_chestplate",
+    "unnecessarilycompressedcobblestone:compression_rain_leggings",
+    "unnecessarilycompressedcobblestone:compression_rain_boots",
+    "unnecessarilycompressedcobblestone:ultimate_compressed_helmet",
+    "unnecessarilycompressedcobblestone:ultimate_compressed_chestplate",
+    "unnecessarilycompressedcobblestone:ultimate_compressed_leggings",
+    "unnecessarilycompressedcobblestone:ultimate_compressed_boots"
   ]
 }

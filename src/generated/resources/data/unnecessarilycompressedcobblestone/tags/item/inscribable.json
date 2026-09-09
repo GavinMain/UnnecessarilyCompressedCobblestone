@@ -5,10 +5,17 @@
     "unnecessarilycompressedcobblestone:compressed_cobblestone_bow",
     "unnecessarilycompressedcobblestone:compressed_cobblestone_arrow",
     "unnecessarilycompressedcobblestone:super_compressed_arrow",
+    "unnecessarilycompressedcobblestone:hyper_compressed_arrow",
     "unnecessarilycompressedcobblestone:compressed_lightning_staff",
     "unnecessarilycompressedcobblestone:compressed_arrow_staff",
     "unnecessarilycompressedcobblestone:compressed_arrow_tnt_staff",
+    "unnecessarilycompressedcobblestone:compressed_healing_staff",
     "unnecessarilycompressedcobblestone:compressed_summoning_staff",
-    "unnecessarilycompressedcobblestone:compressed_cobblestone_pickaxe"
+    "unnecessarilycompressedcobblestone:bolt_launcher",
+    "unnecessarilycompressedcobblestone:tnt_launcher",
+    "unnecessarilycompressedcobblestone:compressed_cobblestone_pickaxe",
+    "unnecessarilycompressedcobblestone:compressed_cobblestone_pickaxe_tier_2",
+    "unnecessarilycompressedcobblestone:ray_of_laser",
+    "unnecessarilycompressedcobblestone:compressed_fishing_rod"
   ]
 }

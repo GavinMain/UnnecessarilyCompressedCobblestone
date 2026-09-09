@@ -4,10 +4,13 @@ import org.jetbrains.annotations.Nullable;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.block.ModBlocks;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Chicken;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -25,6 +28,19 @@ public class CompressedCobblestoneChickenEntity extends Chicken {
     /** Vanilla's laying interval: somewhere between five and ten minutes. */
     private static final int LAY_INTERVAL = 6000;
 
+    /** NBT key for {@link #conjured}. */
+    private static final String CONJURED_TAG = "Conjured";
+
+    /**
+     * Whether this one was called up rather than bred, hatched or placed.
+     * <p>
+     * It is the same guard the silverfish's brood mark is, and for the same reason: the Compressed
+     * Chicken Boss calls ten of these into the air every half minute of its second half, and a
+     * conjured chicken that laid blocks and dropped meat would make that ability a printer. One
+     * lays nothing and drops nothing; a chicken that was paid for is untouched.
+     */
+    private boolean conjured;
+
     public CompressedCobblestoneChickenEntity(EntityType<? extends Chicken> entityType, Level level) {
         super(entityType, level);
     }
@@ -40,7 +56,7 @@ public class CompressedCobblestoneChickenEntity extends Chicken {
     @Override
     public void aiStep() {
         boolean laying = !this.level().isClientSide() && this.isAlive() && !this.isBaby()
-                && !this.isChickenJockey() && this.eggTime <= 1;
+                && !this.conjured && !this.isChickenJockey() && this.eggTime <= 1;
         if (laying) {
             this.eggTime = this.random.nextInt(LAY_INTERVAL) + LAY_INTERVAL;
         }
@@ -62,6 +78,42 @@ public class CompressedCobblestoneChickenEntity extends Chicken {
     @Override
     public boolean causeFallDamage(float fallDistance, float multiplier, net.minecraft.world.damagesource.DamageSource source) {
         return false;
+    }
+
+    /**
+     * Marks this one as summoned, and gives it the health the summoner wants it to have.
+     * <p>
+     * The health is not decoration: what the boss does with these is hurt them on a cadence so the
+     * infestation they carry hatches, and how much health they have is exactly how long that goes
+     * on for.
+     */
+    public void setConjured(float maxHealth) {
+        this.conjured = true;
+        setPersistenceRequired();
+
+        AttributeInstance health = getAttribute(Attributes.MAX_HEALTH);
+        if (health != null) {
+            health.setBaseValue(maxHealth);
+        }
+
+        setHealth(getMaxHealth());
+    }
+
+    @Override
+    protected boolean shouldDropLoot() {
+        return !this.conjured && super.shouldDropLoot();
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag compound) {
+        super.addAdditionalSaveData(compound);
+        compound.putBoolean(CONJURED_TAG, this.conjured);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag compound) {
+        super.readAdditionalSaveData(compound);
+        this.conjured = compound.getBoolean(CONJURED_TAG);
     }
 
     /** Two of these breed into another of these, not into a plain chicken. */

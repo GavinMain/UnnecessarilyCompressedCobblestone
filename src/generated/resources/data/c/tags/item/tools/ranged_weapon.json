@@ -1,5 +1,7 @@
 {
   "values": [
-    "unnecessarilycompressedcobblestone:compressed_cobblestone_bow"
+    "unnecessarilycompressedcobblestone:compressed_cobblestone_bow",
+    "unnecessarilycompressedcobblestone:bolt_launcher",
+    "unnecessarilycompressedcobblestone:tnt_launcher"
   ]
 }

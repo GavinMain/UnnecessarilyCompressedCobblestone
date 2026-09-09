@@ -19,7 +19,18 @@ public enum CompressorTier {
     TIER_2(Items.IRON_BLOCK, 50),
 
     /** A block of gold into a level 90 block. */
-    TIER_3(Items.GOLD_BLOCK, 90);
+    TIER_3(Items.GOLD_BLOCK, 90),
+
+    /** A diamond - the stone, not a block of them - into a level 123 block. */
+    TIER_4(Items.DIAMOND, 123),
+
+    /**
+     * A netherite ingot into a level 187 block. Like the diamond above it this eats a bare item
+     * rather than a block of them, which is the whole of what makes an ingot worth feeding it - and
+     * it is the deepest stone any machine makes, which is why it is built around the Compressed
+     * Guardian's heart and so waits on that fight.
+     */
+    TIER_5(Items.NETHERITE_INGOT, 187);
 
     private final Item input;
     private final int outputLevel;

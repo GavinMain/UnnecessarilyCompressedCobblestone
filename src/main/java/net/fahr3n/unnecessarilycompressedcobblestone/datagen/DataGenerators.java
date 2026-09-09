@@ -43,6 +43,12 @@ public class DataGenerators {
         generator.addProvider(event.includeServer(), blockTagsProvider);
         generator.addProvider(event.includeServer(),
                 new ModItemTagProvider(packOutput, lookupProvider, blockTagsProvider.contentsGetter(), existingFileHelper));
+        // `registries` rather than `lookupProvider`: this one now tags a damage type the mod itself
+        // defines, which only exists in the patched provider.
+        generator.addProvider(event.includeServer(), new ModDamageTypeTagProvider(packOutput, registries));
+        // Mob effects are a code registry, so the plain lookup provider is enough here: nothing in
+        // this one is defined by a datapack.
+        generator.addProvider(event.includeServer(), new ModMobEffectTagProvider(packOutput, lookupProvider));
 
         // Client-side data: models and blockstates
         generator.addProvider(event.includeClient(), new ModItemModelProvider(packOutput, existingFileHelper));

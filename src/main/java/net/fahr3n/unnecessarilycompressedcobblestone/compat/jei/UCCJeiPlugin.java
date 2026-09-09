@@ -42,7 +42,8 @@ public class UCCJeiPlugin implements IModPlugin {
         registration.addRecipeCategories(
                 new MaterialCompressorCategory(helper),
                 new CompressionInscriberCategory(helper),
-                new EngravingTableCategory(helper));
+                new EngravingTableCategory(helper),
+                new LaserAugmentationTableCategory(helper));
     }
 
     @Override
@@ -50,6 +51,7 @@ public class UCCJeiPlugin implements IModPlugin {
         registration.addRecipes(MaterialCompressorCategory.TYPE, MaterialCompressorCategory.displays());
         registration.addRecipes(CompressionInscriberCategory.TYPE, CompressionInscriberCategory.displays());
         registration.addRecipes(EngravingTableCategory.TYPE, EngravingTableCategory.displays());
+        registration.addRecipes(LaserAugmentationTableCategory.TYPE, LaserAugmentationTableCategory.displays());
     }
 
     @Override
@@ -62,6 +64,8 @@ public class UCCJeiPlugin implements IModPlugin {
                 ModBlocks.COMPRESSION_INSCRIBER.get());
         registration.addRecipeCatalysts(EngravingTableCategory.TYPE,
                 ModBlocks.ENGRAVING_TABLE.get());
+        registration.addRecipeCatalysts(LaserAugmentationTableCategory.TYPE,
+                ModBlocks.LASER_AUGMENTATION_TABLE.get());
     }
 
     @Override

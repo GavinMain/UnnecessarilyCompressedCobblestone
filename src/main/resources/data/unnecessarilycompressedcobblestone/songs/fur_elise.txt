@@ -1,0 +1,22 @@
+# Written by tools/build_composer_songs.py. One strike per line: tick volume midi.
+# Beethoven, Bagatelle in A minor - Fur Elise
+# 18 strikes over 84 ticks.
+length 84
+0 1.0 76
+4 1.0 75
+8 1.0 76
+12 1.0 75
+16 1.0 76
+20 1.0 71
+24 1.0 74
+28 1.0 72
+32 1.0 69
+40 1.0 60
+44 1.0 64
+48 1.0 69
+52 1.0 71
+60 1.0 64
+64 1.0 68
+68 1.0 71
+72 1.0 72
+76 1.0 76

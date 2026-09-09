@@ -1,6 +1,11 @@
 {
   "values": [
+    "unnecessarilycompressedcobblestone:broken_compressed_sword",
+    "unnecessarilycompressedcobblestone:dev_sword",
     "unnecessarilycompressedcobblestone:compressed_cobblestone_sword",
-    "unnecessarilycompressedcobblestone:compressed_cobblestone_mace"
+    "unnecessarilycompressedcobblestone:compressed_cobblestone_mace",
+    "unnecessarilycompressedcobblestone:compressed_katana",
+    "unnecessarilycompressedcobblestone:compressed_spear",
+    "unnecessarilycompressedcobblestone:compressed_scythe"
   ]
 }

@@ -1,0 +1,6 @@
+{
+    "parent": "unnecessarilycompressedcobblestone:item/tnt_launcher",
+    "textures": {
+        "layer0": "unnecessarilycompressedcobblestone:item/tnt_launcher_pulling_1"
+    }
+}

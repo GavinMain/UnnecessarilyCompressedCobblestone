@@ -1,16 +1,18 @@
 package net.fahr3n.unnecessarilycompressedcobblestone.block.custom;
 
+import java.util.function.Supplier;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.mojang.serialization.MapCodec;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.block.ModBlocks;
-import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedGolemEntity;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -32,30 +34,62 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
  * A carved pumpkin in compressed stone: it faces the way it was placed, can be worn on the head,
  * and is the head of a golem. Placing one on top of the right stack of blocks builds a
  * {@link CompressedGolemEntity}, exactly as a carved pumpkin builds an iron golem.
+ * <p>
+ * There is one of these per golem, and the three things that tell them apart are all constructor
+ * arguments: the level it is carved out of, the level the body is built out of, and which golem
+ * stands up. A new golem is therefore a block registration, an entity and a texture - the pattern,
+ * the carving, the models and the spawn are all shared.
  */
 public class CarvedCobblestoneBlock extends HorizontalDirectionalBlock implements Equipable {
-    public static final MapCodec<CarvedCobblestoneBlock> CODEC = simpleCodec(CarvedCobblestoneBlock::new);
     public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 
-    /** The compression level this block is carved out of. */
+    /** The compression level the tier 1 head is carved out of. */
     public static final int CARVED_FROM_LEVEL = 11;
 
-    /** The compression level the golem's body is built out of. */
+    /** The compression level the tier 1 golem's body is built out of. */
     public static final int GOLEM_BODY_LEVEL = 12;
+
+    private final int carvedFromLevel;
+    private final int bodyLevel;
+    private final Supplier<? extends EntityType<? extends CompressedGolemEntity>> golemType;
+
+    /**
+     * Built per instance for the same reason {@code CompressedTntBlock}'s is: what this block is
+     * carved from and what it builds are part of what it is, and {@code simpleCodec} only takes a
+     * one-argument constructor. The lambda closes over the parameters rather than the fields so it
+     * does not read {@code this} while the object is still being built.
+     */
+    private final MapCodec<CarvedCobblestoneBlock> codec;
 
     @Nullable
     private BlockPattern golemBase;
     @Nullable
     private BlockPattern golemFull;
 
-    public CarvedCobblestoneBlock(BlockBehaviour.Properties properties) {
+    public CarvedCobblestoneBlock(BlockBehaviour.Properties properties, int carvedFromLevel, int bodyLevel,
+                                  Supplier<? extends EntityType<? extends CompressedGolemEntity>> golemType) {
         super(properties);
+        this.carvedFromLevel = carvedFromLevel;
+        this.bodyLevel = bodyLevel;
+        this.golemType = golemType;
+        this.codec = simpleCodec(blockProperties ->
+                new CarvedCobblestoneBlock(blockProperties, carvedFromLevel, bodyLevel, golemType));
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
 
     @Override
     public MapCodec<? extends CarvedCobblestoneBlock> codec() {
-        return CODEC;
+        return this.codec;
+    }
+
+    /** The compression level a player carves this head out of with shears. */
+    public int carvedFromLevel() {
+        return this.carvedFromLevel;
+    }
+
+    /** The compression level the body under it has to be built out of. */
+    public int bodyLevel() {
+        return this.bodyLevel;
     }
 
     /** The head completes the golem, so the check runs when this is the block being placed. */
@@ -77,7 +111,7 @@ public class CarvedCobblestoneBlock extends HorizontalDirectionalBlock implement
             return;
         }
 
-        CompressedGolemEntity golem = ModEntities.COMPRESSED_GOLEM.get().create(level);
+        CompressedGolemEntity golem = this.golemType.get().create(level);
         if (golem == null) {
             return;
         }
@@ -141,7 +175,7 @@ public class CarvedCobblestoneBlock extends HorizontalDirectionalBlock implement
         return this.golemFull;
     }
 
-    private static Block body() {
-        return ModBlocks.byLevel(GOLEM_BODY_LEVEL).get();
+    private Block body() {
+        return ModBlocks.byLevel(this.bodyLevel).get();
     }
 }

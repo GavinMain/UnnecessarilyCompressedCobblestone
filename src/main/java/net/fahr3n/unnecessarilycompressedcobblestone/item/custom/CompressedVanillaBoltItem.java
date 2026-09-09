@@ -4,6 +4,7 @@ import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.VanillaLightningBoltEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * The plainest bolt there is: what a core loaded with this throws is exactly what a thunderstorm
@@ -16,20 +17,24 @@ import net.minecraft.server.level.ServerLevel;
  * distance rather than loudness.
  */
 public class CompressedVanillaBoltItem extends BoltItem {
+    /** What a storm bolt does. It is private on {@code LightningBolt}, so it is written out here. */
+    public static final float VANILLA_DAMAGE = 5.0F;
+
+
     public CompressedVanillaBoltItem(Properties properties) {
         super(properties);
     }
 
     @Override
-    public void strike(ServerLevel level, BlockPos core, int signal) {
+    public void strike(ServerLevel level, BlockPos pos, ItemStack stack, int signal, float bonusDamage) {
         VanillaLightningBoltEntity bolt = ModEntities.VANILLA_LIGHTNING_BOLT.get().create(level);
         if (bolt == null) {
             return;
         }
 
-        // On top of the core rather than inside it, so what it hits is whatever is standing there.
-        bolt.moveTo(core.getX() + 0.5, core.getY() + 1.0, core.getZ() + 0.5);
+        bolt.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
         bolt.setVolumeScale(strength(signal));
+        bolt.setDamage(VANILLA_DAMAGE + Math.max(0.0F, bonusDamage));
         level.addFreshEntity(bolt);
     }
 }

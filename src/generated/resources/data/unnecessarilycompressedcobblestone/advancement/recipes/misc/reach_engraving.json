@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_compressed_cobblestone_134": {
+      "conditions": {
+        "items": [
+          {
+            "items": "unnecessarilycompressedcobblestone:compressed_cobblestone_134"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "unnecessarilycompressedcobblestone:reach_engraving"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_compressed_cobblestone_134"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "unnecessarilycompressedcobblestone:reach_engraving"
+    ]
+  }
+}

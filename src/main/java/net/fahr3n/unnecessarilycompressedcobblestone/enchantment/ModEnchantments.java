@@ -37,6 +37,45 @@ public class ModEnchantments {
     public static final ResourceKey<Enchantment> SILENT_CAST = key("silent_cast");
 
     /**
+     * How many times a fishing rod rolls its catch: {@code level + 1} times what the rod rolls on
+     * its own, every roll independent of the others, so it is more catches rather than a better one.
+     */
+    public static final ResourceKey<Enchantment> FISHING = key("fishing");
+
+    /** Twenty percent more damage on a hook that strikes something, per level, compounded. */
+    public static final ResourceKey<Enchantment> HOOK = key("hook");
+
+    /**
+     * Sixty-four times the yield out of a ripe crop broken with a hoe or a scythe. What counts as a
+     * crop, and what counts as ripe, both live in {@code ModEvents}.
+     */
+    public static final ResourceKey<Enchantment> HARVEST_FESTIVAL = key("harvest_festival");
+
+    /**
+     * The two fishing enchantments. Unlike the Compression family and the staff's three, both stop
+     * where the enchanting table stops - there is no crafted rung above them and so no book recipe,
+     * which is why they are a plain list of numbers rather than another record.
+     *
+     * @param key      the enchantment itself
+     * @param maxLevel the deepest level, which the table and the anvil both reach
+     * @param weight   how often the table offers it against everything else it could
+     */
+    public record FishingEnchantment(ResourceKey<Enchantment> key, int maxLevel, int weight) {
+    }
+
+    /**
+     * Both of them go on {@code #minecraft:enchantable/fishing}, which is vanilla's own list and
+     * holds every fishing rod in the game - so these reach another mod's rod exactly the way Lure
+     * and Luck of the Sea do, with nothing here naming an item.
+     */
+    public static final List<FishingEnchantment> FISHING_ENCHANTMENTS = List.of(
+            // Levels 1-3: two, three and four times the catch. Rarer than Hook, since a rod pulling
+            // four independent catches is worth far more than one that hits harder.
+            new FishingEnchantment(FISHING, 3, 2),
+            // Levels 1-5: 1.2^5, so a fifth over twice the damage at the top.
+            new FishingEnchantment(HOOK, 5, 5));
+
+    /**
      * The staff's three enchantments and the highest level the enchanting table hands out for each.
      * That number is also each one's registered max level, which is what makes the cap absolute:
      * neither the table nor the anvil will climb past a registered maximum.
@@ -217,6 +256,41 @@ public class ModEnchantments {
     public static final TagKey<Item> STAFF_ENCHANTABLE = ItemTags.create(
             ResourceLocation.fromNamespaceAndPath(UnnecessarilyCompressedCobblestone.MOD_ID, "enchantable/staff"));
 
+    /**
+     * What Harvest Festival goes on: every hoe in the game, by vanilla's own
+     * {@code #minecraft:hoes}, plus the Compressed Scythe, which is the one thing in this mod that
+     * clears a field without being a hoe. A tag rather than the two of them named in code, so
+     * another mod's harvesting tool joins by joining it.
+     */
+    public static final TagKey<Item> HARVEST_ENCHANTABLE = ItemTags.create(
+            ResourceLocation.fromNamespaceAndPath(UnnecessarilyCompressedCobblestone.MOD_ID, "enchantable/harvest"));
+
+    /**
+     * An enchantment with no table levels at all: one rung, on one book, wrapped around one block
+     * tier. It is the smallest shape a crafted enchantment comes in - no ladder, so no tier table
+     * and nothing for the anvil to climb - and it is registered at its true maximum, which is what
+     * lets vanilla's own anvil handle the book and keeps {@code ModEvents} out of it entirely.
+     * <p>
+     * Book tiers must still stay disjoint from every other book's, since the one
+     * {@link #BOOK_PATTERN} grid means the tier is all that tells two books apart.
+     *
+     * @param key       the enchantment itself
+     * @param supported what it may go on
+     * @param maxLevel  the deepest level, which is also how many books there are
+     * @param bookTier  the compressed cobblestone tier its book is crafted from
+     */
+    public record CraftedEnchantment(ResourceKey<Enchantment> key, TagKey<Item> supported, int maxLevel,
+                                     int bookTier) {
+    }
+
+    /**
+     * Every craft-only enchantment that is not part of a family. Harvest Festival is the first, and
+     * it has one level because there is nothing above sixty-four times a crop worth having: a second
+     * rung would be stacks of stacks off one wheat plant.
+     */
+    public static final List<CraftedEnchantment> CRAFTED_ENCHANTMENTS = List.of(
+            new CraftedEnchantment(HARVEST_FESTIVAL, HARVEST_ENCHANTABLE, 1, 225));
+
     public static void bootstrap(BootstrapContext<Enchantment> context) {
         HolderGetter<Item> items = context.lookup(Registries.ITEM);
         HolderGetter<Enchantment> enchantments = context.lookup(Registries.ENCHANTMENT);
@@ -237,6 +311,37 @@ public class ModEnchantments {
                     .exclusiveWith(enchantments.getOrThrow(EXCLUSIVE_SET_COMPRESSION))
                     .withEffect(EnchantmentEffectComponents.POST_ATTACK, EnchantmentTarget.ATTACKER,
                             EnchantmentTarget.VICTIM, new CompressionEnchantmentEffect(family.tierPerLevel())));
+        }
+
+        // The two fishing ones, on vanilla's own fishing tag. Like the staff's three they carry no
+        // effect components: "roll the loot table again" and "multiply the damage a bobber does"
+        // are not things vanilla's effect components can describe, so ModEvents reads the level off
+        // the rod at the moment it matters.
+        for (FishingEnchantment fishing : FISHING_ENCHANTMENTS) {
+            register(context, fishing.key(), Enchantment.enchantment(Enchantment.definition(
+                    items.getOrThrow(ItemTags.FISHING_ENCHANTABLE),
+                    items.getOrThrow(ItemTags.FISHING_ENCHANTABLE),
+                    fishing.weight(),
+                    fishing.maxLevel(),
+                    Enchantment.dynamicCost(15, 9),
+                    Enchantment.dynamicCost(65, 9),
+                    4,
+                    EquipmentSlotGroup.MAINHAND)));
+        }
+
+        // The craft-only singles. Harvest Festival carries no effect component either: "sixty-four
+        // times whatever the loot table produced" is not a thing vanilla's effect components can
+        // describe, so ModEvents reads the level off the tool at the moment the block breaks.
+        for (CraftedEnchantment crafted : CRAFTED_ENCHANTMENTS) {
+            register(context, crafted.key(), Enchantment.enchantment(Enchantment.definition(
+                    items.getOrThrow(crafted.supported()),
+                    items.getOrThrow(crafted.supported()),
+                    1,
+                    crafted.maxLevel(),
+                    Enchantment.dynamicCost(15, 9),
+                    Enchantment.dynamicCost(65, 9),
+                    4,
+                    EquipmentSlotGroup.MAINHAND)));
         }
 
         // The staff's own three. They carry no effect components at all: what each of them does is

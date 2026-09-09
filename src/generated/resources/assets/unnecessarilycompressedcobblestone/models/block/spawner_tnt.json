@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "unnecessarilycompressedcobblestone:block/spawner_tnt_bottom",
+    "side": "unnecessarilycompressedcobblestone:block/spawner_tnt_side",
+    "top": "unnecessarilycompressedcobblestone:block/spawner_tnt_top"
+  }
+}

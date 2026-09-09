@@ -1,0 +1,6 @@
+{
+    "parent": "unnecessarilycompressedcobblestone:item/bolt_launcher",
+    "textures": {
+        "layer0": "unnecessarilycompressedcobblestone:item/bolt_launcher_pulling_0"
+    }
+}

@@ -1,12 +1,23 @@
 package net.fahr3n.unnecessarilycompressedcobblestone.item.custom;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 import org.jetbrains.annotations.Nullable;
 
+import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
+import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.BoltProjectileEntity;
+import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.Composition;
 import net.fahr3n.unnecessarilycompressedcobblestone.util.CompressionEnergy;
 import net.fahr3n.unnecessarilycompressedcobblestone.util.DeferredStrikes;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.Engraving;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.Engravings;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.LightningSong;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -47,6 +58,19 @@ public class CompressedLightningStaffItem extends CompressedStaffItem {
     private static final int TICKS_PER_SECOND = 20;
 
     /**
+     * What the Composition engraving loads: the same datapack file the Compressed Composer plays, so
+     * a pack that rewrites {@code fur_elise} rewrites both the boss's attack and this staff's.
+     */
+    public static final ResourceLocation COMPOSITION_SONG =
+            ResourceLocation.fromNamespaceAndPath(UnnecessarilyCompressedCobblestone.MOD_ID, "fur_elise");
+
+    /** How fast an engraved staff throws its bolt - a little quicker than a fully drawn launcher. */
+    private static final float COMPOSITION_VELOCITY = 2.2F;
+
+    /** How wide a Multicast volley scatters, so several performances are not all in one spot. */
+    private static final float COMPOSITION_SPREAD = 3.0F;
+
+    /**
      * What the line will stop on. Spectators and anything already dead are not there to be hit, and
      * neither is a passenger of the caster's own - but everything else is, players included: this is
      * a weapon, and where it is pointed is what it hits.
@@ -65,12 +89,67 @@ public class CompressedLightningStaffItem extends CompressedStaffItem {
 
     @Override
     protected void release(ServerLevel level, Player player, ItemStack stack) {
+        if (Engravings.has(stack, Engraving.COMPOSITION)) {
+            performComposition(level, player, stack);
+            return;
+        }
+
         int bolts = multicast(stack, level);
 
         // Multicast is a rate: the bolts of one cast are spread evenly across the second after it
         // rather than all landing on the tick the staff was let go.
         DeferredStrikes.queue(level, strikePos(level, player), damage(stack, level), bolts,
                 Math.max(1, TICKS_PER_SECOND / bolts), player);
+    }
+
+    /**
+     * The Composition engraving's cast: Composition Bolts written with {@link #COMPOSITION_SONG},
+     * thrown where the staff was pointed.
+     * <p>
+     * Nothing about the strike is written here. A {@link BoltProjectileEntity} carries the bolt it
+     * was fired as and asks it what to do wherever it stops, and a Composition Bolt's answer is to
+     * play its sheet - so this is a delivery and no more, exactly as the Bolt Launcher is. The sheet
+     * itself is the mod's own song file turned back into squares by {@link Composition#fromSong}, so
+     * the piece is written down in one place rather than two.
+     * <p>
+     * The staff's own three dials still mean what they always did, and the middle one is the one to
+     * read twice: Multicast is how many bolts a cast throws, Silent Cast is how quickly it may be
+     * thrown, and Compression Energy and Surge are handed over as the signal - which for a song is
+     * how far it carries, since the notes themselves hit for what lightning hits for wherever a song
+     * is played from. Above a full signal there is no gain left to give and the rest becomes
+     * distance, which is the only louder there is.
+     */
+    private void performComposition(ServerLevel level, Player player, ItemStack stack) {
+        List<Integer> sheet = Composition.fromSong(LightningSong.get(level.getServer(), COMPOSITION_SONG));
+        if (sheet.isEmpty()) {
+            return;
+        }
+
+        ItemStack bolt = new ItemStack(ModItems.COMPOSITION_BOLT.get());
+        Composition.set(bolt, sheet);
+
+        int shots = multicast(stack, level);
+        int signal = compositionSignal(stack, level);
+
+        for (int shot = 0; shot < shots; shot++) {
+            BoltProjectileEntity projectile = new BoltProjectileEntity(level, player, bolt, stack);
+            projectile.setSignal(signal);
+            projectile.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F,
+                    COMPOSITION_VELOCITY, shots == 1 ? 0.0F : COMPOSITION_SPREAD);
+            level.addFreshEntity(projectile);
+        }
+
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT,
+                SoundSource.PLAYERS, 1.0F, 1.2F);
+    }
+
+    /**
+     * How hard an engraved cast calls its piece down: a full redstone signal, one more per digit of
+     * Compression Energy, all of it multiplied by Surge. It is the same shape of number
+     * {@link #damage} is, spent on the one thing a song has to spend it on.
+     */
+    public static int compositionSignal(ItemStack stack, @Nullable Level level) {
+        return Math.round((BoltItem.MAX_SIGNAL + CompressionEnergy.bonus(stack)) * surge(stack, level));
     }
 
     /**

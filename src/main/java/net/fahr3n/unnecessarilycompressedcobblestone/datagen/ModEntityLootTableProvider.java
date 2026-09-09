@@ -27,8 +27,50 @@ public class ModEntityLootTableProvider extends EntityLootSubProvider {
         super(FeatureFlags.REGISTRY.allFlags(), registries);
     }
 
+    /** The stone a Compressed Silverfish is made of, and the tier its own TNT is crafted at. */
+    private static final int SILVERFISH_LEVEL = 150;
+
+    /** A tier above the stone the Compressed Chicken Boss's egg is called up at. */
+    private static final int CHICKEN_BOSS_DROP_LEVEL = 157;
+
+    /** And a tier above the stone the second creeper's egg is called up at. */
+    private static final int CREEPER_TIER_2_DROP_LEVEL = 164;
+
+    /** And a tier above the stone the Composer's egg is called up at. */
+    private static final int COMPOSER_DROP_LEVEL = 172;
+
+    /** A tier above the stone the Compressed Guardian's egg is called up at. */
+    private static final int GUARDIAN_DROP_LEVEL = 179;
+
+    /** A tier above the stone the husk's egg is called up at. */
+    private static final int HUSK_DROP_LEVEL = 197;
+
+    /** A tier above the stone the snow golem's egg is called up at, and the stone its dome is. */
+    private static final int SNOW_GOLEM_DROP_LEVEL = 206;
+
+    /** What the Compressed Ghast gives up: one tier past the stone its own egg is cut from. */
+    private static final int GHAST_DROP_LEVEL = 236;
+
+    /**
+     * And what the Compressed Dragon gives up, which is the deepest stone in the mod - there is no
+     * tier above {@code MAX_COMPRESSION_LEVEL} for a later fight to claim, and this is the last
+     * fight.
+     */
+    private static final int DRAGON_DROP_LEVEL = ModBlocks.MAX_COMPRESSION_LEVEL;
+
     @Override
     public void generate() {
+        // One block of the deepest stone in the mod's progression, and Looting adds up to one more.
+        // Only a silverfish that was placed in the world drops it: one that hatched out of an
+        // infestation is marked a brood member and drops nothing, or the effect would be a printer -
+        // see CompressedSilverfishEntity#setBroodling.
+        add(ModEntities.COMPRESSED_SILVERFISH.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(SILVERFISH_LEVEL))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F))))));
+
         add(ModEntities.COMPRESSED_GOLEM.get(), LootTable.lootTable()
                 .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1.0F))
@@ -37,6 +79,52 @@ public class ModEntityLootTableProvider extends EntityLootSubProvider {
                                 .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
                                         UniformGenerator.between(0.0F, 1.0F))))
                         .add(LootItem.lootTableItem(ModItems.TIER_1_COMPRESSED_HEART.get()))));
+
+        // A tier above the stone it was built out of, and the heart the fourth Material Compressor
+        // is built around.
+        add(ModEntities.COMPRESSED_GOLEM_TIER_2.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(ModBlocks.GOLEM_TIER_2_LEVEL + 1))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                // Always exactly one, the way every other boss gives up its heart.
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.TIER_9_COMPRESSED_HEART.get()))));
+
+        // A tier above the stone it was built out of, which is the stone the Compressed Scythe is
+        // cut from, and the heart that hilts it. Nothing else in the mod drops either.
+        add(ModEntities.COMPRESSED_ORE_GOLEM.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(ModBlocks.ORE_GOLEM_LEVEL + 1))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                // Always exactly one, the way every other boss gives up its heart.
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.TIER_17_COMPRESSED_HEART.get()))));
+
+        // A tier above the stone its egg is cut from, and the heart. Nothing else drops either.
+        add(ModEntities.COMPRESSED_GHAST.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(GHAST_DROP_LEVEL))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                // Always exactly one, the way every other boss gives up its heart.
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.TIER_18_COMPRESSED_HEART.get()))));
+
+        // The mini ghasts a Ghasted player carries get no table at all, and must not: they are
+        // registered as MobCategory.MISC and vanilla's own provider refuses a loot table for
+        // anything in that category. They drop nothing anyway - MiniGhastEntity refuses loot
+        // outright, the way every conjured thing in this mod does.
 
         // Back the gunpowder that went into calling it up, plus the stone it was packed out of.
         // Both pools take Looting, which adds up to one extra of each per level.
@@ -103,6 +191,139 @@ public class ModEntityLootTableProvider extends EntityLootSubProvider {
                 .withPool(LootPool.lootPool()
                         .setRolls(ConstantValue.exactly(1.0F))
                         .add(LootItem.lootTableItem(ModItems.TIER_7_COMPRESSED_HEART.get()))));
+
+        // A tier above the stone its egg is called up at, and the heart every boss here gives up.
+        add(ModEntities.COMPRESSED_SPIRIT.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(108))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                // Always exactly one, the way every other boss gives up its heart.
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.TIER_8_COMPRESSED_HEART.get()))));
+
+        // A tier above the stone its egg is called up at, and the heart every boss gives up.
+        add(ModEntities.COMPRESSED_WITCH.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(132))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.TIER_10_COMPRESSED_HEART.get()))));
+
+        // A tier above the stone its egg is called up at, and the heart every boss gives up.
+        add(ModEntities.COMPRESSED_CREEPER_TIER_2.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(CREEPER_TIER_2_DROP_LEVEL))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                // Always exactly one, the way every other boss gives up its heart.
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.TIER_12_COMPRESSED_HEART.get()))));
+
+        // A tier above the stone its egg is called up at, and the heart every boss gives up.
+        add(ModEntities.COMPRESSED_COMPOSER.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(COMPOSER_DROP_LEVEL))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                // Always exactly one, the way every other boss gives up its heart.
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.TIER_13_COMPRESSED_HEART.get()))));
+
+        // A tier above the stone its egg is called up at, and the heart every boss gives up.
+        add(ModEntities.COMPRESSED_GUARDIAN.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(GUARDIAN_DROP_LEVEL))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                // Always exactly one, the way every other boss gives up its heart.
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.TIER_14_COMPRESSED_HEART.get()))));
+
+        // A tier above the stone its egg is called up at, and the heart every boss gives up.
+        add(ModEntities.COMPRESSED_CHICKEN_BOSS.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(CHICKEN_BOSS_DROP_LEVEL))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                // Always exactly one, the way every other boss gives up its heart.
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.TIER_11_COMPRESSED_HEART.get()))));
+
+        // A tier above the stone its egg is called up at, and the heart every boss gives up.
+        add(ModEntities.COMPRESSED_HUSK.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(HUSK_DROP_LEVEL))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                // Always exactly one, the way every other boss gives up its heart.
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.TIER_15_COMPRESSED_HEART.get()))));
+
+        // A tier above the stone its egg is called up at, and the heart every boss gives up.
+        add(ModEntities.COMPRESSED_SNOW_GOLEM.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(SNOW_GOLEM_DROP_LEVEL))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F)))))
+                // Always exactly one, the way every other boss gives up its heart.
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.TIER_16_COMPRESSED_HEART.get()))));
+
+        // The deepest stone there is, and no heart: this phase does not so much die as hand the
+        // fight over, and what the finale is worth belongs to the mob that arrives out of it.
+        add(ModEntities.COMPRESSED_DRAGON.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModBlocks.byLevel(DRAGON_DROP_LEVEL))
+                                .apply(SetItemCountFunction.setCount(UniformGenerator.between(4.0F, 8.0F)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.registries,
+                                        UniformGenerator.between(0.0F, 1.0F))))));
+
+        // One egg and nothing else, which is the whole of what the last fight in the mod pays out:
+        // no stone, no heart, and not a stack of anything. What it leaves behind is the dragon.
+        add(ModEntities.COMPRESSED_DRAGON_TIER_2.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .setRolls(ConstantValue.exactly(1.0F))
+                        .add(LootItem.lootTableItem(ModItems.COMPRESSED_DRAGON_EGG.get()))));
+
+        // Hatched rather than fought, so it leaves nothing behind - and neither does the storm.
+        add(ModEntities.COMPRESSED_DRAGON_PET.get(), LootTable.lootTable());
+
+        // A tamed pet, so it drops nothing at all - the same as the wolf it used to be.
+        add(ModEntities.COMPRESSED_WOLF.get(), LootTable.lootTable());
+        add(ModEntities.COMPRESSED_HORSE.get(), LootTable.lootTable());
+        add(ModEntities.COMPRESSED_BEE.get(), LootTable.lootTable());
+
+        // Both ghasts a player keeps are hatched rather than fought, so neither leaves anything
+        // behind - the same rule every summoned thing in the mod follows.
+        add(ModEntities.GHAST_PET.get(), LootTable.lootTable());
+        add(ModEntities.GHAST_MOUNT.get(), LootTable.lootTable());
 
         // Its phantoms drop nothing: they arrive ten at a time and are not the fight.
         add(ModEntities.COMPRESSED_PHANTOM.get(), LootTable.lootTable());

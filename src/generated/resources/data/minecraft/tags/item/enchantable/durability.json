@@ -2,9 +2,15 @@
   "values": [
     "unnecessarilycompressedcobblestone:compressed_cobblestone_bow",
     "unnecessarilycompressedcobblestone:compressed_cobblestone_mace",
+    "unnecessarilycompressedcobblestone:compressed_shield",
+    "unnecessarilycompressedcobblestone:bolt_launcher",
+    "unnecessarilycompressedcobblestone:tnt_launcher",
+    "unnecessarilycompressedcobblestone:compressed_fishing_rod",
     "unnecessarilycompressedcobblestone:compressed_lightning_staff",
     "unnecessarilycompressedcobblestone:compressed_arrow_staff",
     "unnecessarilycompressedcobblestone:compressed_arrow_tnt_staff",
-    "unnecessarilycompressedcobblestone:compressed_summoning_staff"
+    "unnecessarilycompressedcobblestone:compressed_summoning_staff",
+    "unnecessarilycompressedcobblestone:compressed_healing_staff",
+    "unnecessarilycompressedcobblestone:ray_of_laser"
   ]
 }

@@ -203,6 +203,61 @@ def mini_block(im, tex, backing=None):
 # name -> (kind, payload, tier)
 ITEM, BLOCKMINI, FIGURE, CHICKEN = "item", "block", "figure", "chicken"
 
+# Two chevrons, the fast-forward mark: the Zoom TNT's effect is Speed X and a step height, and
+# neither has an item to put in the middle of the plate.
+FIGURES["zoom"] = ("""
+............
+............
+.##...##....
+.###..###...
+.####.####..
+.#####.####.
+.#####.####.
+.####.####..
+.###..###...
+.##...##....
+............
+............
+""", {"#": (0x5b, 0xca, 0x51, 255)})
+
+
+# A silverfish seen from above: a segmented grey body with legs down both sides. The second nest
+# flies and bites through armour, and the tier bar is the only thing saying so.
+FIGURES["silverfish"] = ("""
+............
+.....##.....
+....#bb#....
+..l#bbbb#l..
+...#bbbb#...
+..l#bbbb#l..
+...#bbbb#...
+..l#bbbb#l..
+...#bbbb#...
+....#bb#....
+.....##.....
+............
+""", {"#": (0x2b, 0x2b, 0x30, 255), "b": (0x9a, 0x9a, 0xa2, 255),
+      "l": (0x6a, 0x6a, 0x72, 255)})
+
+
+# Three columns of deep stone standing to different heights: the Pillar TNT plants level 213 through
+# the chunks around it, and there is no item anywhere in the mod that says "a pillar".
+FIGURES["pillars"] = ("""
+.##.....##..
+.##.....##..
+.##.##..##..
+s##s##..##.s
+.##.##.s##..
+.##.##..##..
+.##.##..##.s
+s##.##..##..
+.##.##..##..
+.##.##.s##..
+.##.##..##..
+.##.##..##..
+""", {"#": (0x8a, 0x8f, 0xb0, 255), "s": (0x5a, 0x5f, 0x80, 255)})
+
+
 TNTS = {
     "compressed_tnt":       (BLOCKMINI, "block/tnt_side.png", 1),
     "super_compressed_tnt": (BLOCKMINI, "block/tnt_side.png", 2),
@@ -213,6 +268,7 @@ TNTS = {
     "glass_tnt_tier_2":     (BLOCKMINI, "block/glass.png", 2),
     "chicken_tnt":          (CHICKEN, None, 1),
     "chicken_tnt_tier_2":   (CHICKEN, None, 2),
+    "chicken_tnt_tier_3":   (CHICKEN, None, 3),
     "golem_tnt":            (FIGURE, "golem", 1),
     "apple_tnt":            (ITEM, "item/apple.png", 1),
     "random_tnt":           (FIGURE, "random", 1),
@@ -227,6 +283,36 @@ TNTS = {
     "effect_tnt":           (ITEM, "@potion", 1),
     "flash_tnt":            (FIGURE, "flash", 1),
     "lightning_song_tnt":   (FIGURE, "song", 1),
+    "pinball_tnt":          (ITEM, "item/wind_charge.png", 1),
+    "bolt_tnt":             (ITEM, "@mod:item/compressed_vanilla_bolt.png", 1),
+    "moonlight_tnt":        (FIGURE, "song", 1),
+    "pool_tnt":             (BLOCKMINI, "block/water_still.png", 1),
+    "lightning_song_tnt_2": (FIGURE, "song", 2),
+    "zoom_tnt":             (FIGURE, "zoom", 1),
+    "web_tnt":              (BLOCKMINI, "block/cobweb.png", 1),
+    "portal_tnt":           (BLOCKMINI, "block/nether_portal.png", 1),
+    "spawner_tnt":          (BLOCKMINI, "block/spawner.png", 1),
+    "snow_tnt":             (BLOCKMINI, "block/snow.png", 1),
+    "silverfish_tnt":       (FIGURE, "silverfish", 1),
+    "silverfish_tnt_tier_2":(FIGURE, "silverfish", 2),
+    "geyser_tnt":           (BLOCKMINI, "block/water_still.png", 1),
+    "geyser_tnt_tier_2":    (BLOCKMINI, "block/lava_still.png", 2),
+    "debris_tnt":           (BLOCKMINI, "block/ancient_debris_top.png", 1),
+    "arrow_tnt_tier_2":     (ITEM, "item/arrow.png", 2),
+    "succ_tnt":             (ITEM, "item/ender_eye.png", 1),
+    "village_tnt":          (ITEM, "item/emerald.png", 1),
+    "mansion_tnt":          (BLOCKMINI, "block/dark_oak_planks.png", 1),
+    "pyramid_tnt":          (BLOCKMINI, "block/prismarine_bricks.png", 1),
+    "pillar_tnt_tier_2":    (FIGURE, "pillars", 2),
+    "bee_nt":               (ITEM, "item/honeycomb.png", 1),
+    # Its own floor, so the icon is what the charge leaves behind rather than what it takes away.
+    "flat_tnt":             (BLOCKMINI, "block/smooth_stone.png", 1),
+    "damage_web_tnt":       (BLOCKMINI, "block/cobweb.png", 2),
+    "laser_tnt":            (FIGURE, "guardian", 1),
+    # A dome is a shell of the mod's own stone, so the icon is the stone rather than a shape.
+    "dome_tnt":             (BLOCKMINI, "block/stone_bricks.png", 1),
+    # The Succ TNT's eye on a yellow bar: this is that charge's second tier and nothing else.
+    "blackhole_tnt":        (ITEM, "item/ender_eye.png", 2),
 }
 
 
@@ -298,6 +384,9 @@ for name, (kind, payload, tier) in TNTS.items():
         else:
             if payload == "@potion":
                 icon = potion_icon()
+            elif payload.startswith("@mod:"):
+                # The mod's own art, for an effect whose item is one of ours rather than vanilla's.
+                icon = Image.open(os.path.join(MOD, *payload[5:].split("/"))).convert("RGBA")
             elif payload == "@leather":
                 icon = tinted("item/leather_chestplate.png", (0xa0, 0x65, 0x40))
             else:
@@ -313,7 +402,7 @@ for name, (kind, payload, tier) in TNTS.items():
     written.append(rel)
 
 # contact sheet
-sheet = Image.new("RGBA", (16 * 8 * 6, 16 * 8 * 4), (255, 255, 255, 255))
+sheet = Image.new("RGBA", (16 * 8 * 6, 128 * ((len(written) + 5) // 6)), (255, 255, 255, 255))
 for i, r in enumerate(written):
     root = (MOD if os.environ.get("APPLY") else PREVIEW)
     t = Image.open(os.path.join(root, *r.split("/"))).convert("RGBA").resize((128, 128), Image.NEAREST)

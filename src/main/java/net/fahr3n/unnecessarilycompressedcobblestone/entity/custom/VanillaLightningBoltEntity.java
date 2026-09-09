@@ -1,5 +1,8 @@
 package net.fahr3n.unnecessarilycompressedcobblestone.entity.custom;
 
+import net.fahr3n.unnecessarilycompressedcobblestone.client.NoteSound;
+import net.fahr3n.unnecessarilycompressedcobblestone.sound.ModSounds;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.PianoNote;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -30,6 +33,10 @@ import net.minecraft.world.level.Level;
  * only 32 blocks. Both still play at full gain, so the pair sounds the same standing next to it.
  * Below 1 the opposite: the range is a flat 16 blocks and the number is loudness, which is the half
  * of the scale a bolt playing a note needs.
+ * <p>
+ * A bolt can also be given a piano key to play in place of that pair, which is the whole of what a
+ * note bolt is: everything else about it - the fire, the damage, the flash - is the same lightning,
+ * and only what it says when it lands has changed. See {@link #setNote}.
  */
 public class VanillaLightningBoltEntity extends LightningBolt {
     /** What vanilla plays its thunder at: far enough to be heard everywhere in the dimension. */
@@ -46,6 +53,16 @@ public class VanillaLightningBoltEntity extends LightningBolt {
             SynchedEntityData.defineId(VanillaLightningBoltEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> DATA_IMPACT_VOLUME =
             SynchedEntityData.defineId(VanillaLightningBoltEntity.class, EntityDataSerializers.FLOAT);
+
+    /**
+     * Which piano key this bolt plays instead of the pair above, or {@link #NO_NOTE} for the pair.
+     * Synced for the same reason the volumes are: the sound is played by the client.
+     */
+    private static final EntityDataAccessor<Integer> DATA_NOTE =
+            SynchedEntityData.defineId(VanillaLightningBoltEntity.class, EntityDataSerializers.INT);
+
+    /** What a bolt that is thunder rather than music carries. */
+    public static final int NO_NOTE = -1;
 
     /** The tick vanilla's own sounds are keyed off, and the one this bolt steps past. */
     private static final int SOUND_LIFE = 2;
@@ -79,6 +96,24 @@ public class VanillaLightningBoltEntity extends LightningBolt {
         setVolumes(volumeAt(VANILLA_THUNDER, scale), volumeAt(VANILLA_IMPACT, scale));
     }
 
+    /**
+     * Plays {@code key} - a piano key, 0 for A0 up to 87 for C8 - at {@code volume}, in place of the
+     * thunder and the crack.
+     * <p>
+     * The pair is replaced rather than joined: thunder is four orders of magnitude louder than
+     * anything the note could be played at, so a bolt that kept it would be a bolt with a note
+     * somewhere underneath it. A volume here is loudness rather than range, which is the half of the
+     * scale a tune needs - see the note on {@link #setVolumeScale}.
+     */
+    public void setNote(int key, float volume) {
+        this.entityData.set(DATA_NOTE, PianoNote.isKey(key) ? key : NO_NOTE);
+        setVolumes(volume, 0.0F);
+    }
+
+    public int getNote() {
+        return this.entityData.get(DATA_NOTE);
+    }
+
     public float getThunderVolume() {
         return this.entityData.get(DATA_THUNDER_VOLUME);
     }
@@ -97,6 +132,7 @@ public class VanillaLightningBoltEntity extends LightningBolt {
         super.defineSynchedData(builder);
         builder.define(DATA_THUNDER_VOLUME, VANILLA_THUNDER);
         builder.define(DATA_IMPACT_VOLUME, VANILLA_IMPACT);
+        builder.define(DATA_NOTE, NO_NOTE);
     }
 
     @Override
@@ -109,6 +145,22 @@ public class VanillaLightningBoltEntity extends LightningBolt {
         // then re-flashes up to twice more.
         if (this.level().isClientSide() && this.life == SOUND_LIFE) {
             this.life = SOUND_LIFE - 1;
+
+            // A note replaces the pair outright, and is played on the records channel rather than
+            // the weather one: it is music, and it is mixed with the rest of the music.
+            int note = getNote();
+            if (note != NO_NOTE) {
+                float volume = getThunderVolume();
+                if (volume > 0.0F) {
+                    // Not playLocalSound: that one attenuates linearly and a note has to carry as
+                    // far as the player can see. See NoteSound, which is a client-only class and is
+                    // named only from inside this branch for that reason.
+                    NoteSound.play(ModSounds.NOTES.get(note).get(), getX(), getY(), getZ(), volume);
+                }
+
+                super.tick();
+                return;
+            }
 
             // A volume of 0 is skipped rather than handed over: the engine logs a line for every
             // silent sound it is asked to play, and a song is a thousand of them.

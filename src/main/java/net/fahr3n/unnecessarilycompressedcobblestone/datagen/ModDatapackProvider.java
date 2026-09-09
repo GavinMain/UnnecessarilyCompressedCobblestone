@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
+import net.fahr3n.unnecessarilycompressedcobblestone.damage.ModDamageTypes;
 import net.fahr3n.unnecessarilycompressedcobblestone.enchantment.ModEnchantments;
 import net.fahr3n.unnecessarilycompressedcobblestone.worldgen.ModConfiguredFeatures;
 import net.fahr3n.unnecessarilycompressedcobblestone.worldgen.ModPlacedFeatures;
@@ -17,6 +18,7 @@ import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 public class ModDatapackProvider extends DatapackBuiltinEntriesProvider {
     public static final RegistrySetBuilder BUILDER = new RegistrySetBuilder()
             .add(Registries.ENCHANTMENT, ModEnchantments::bootstrap)
+            .add(Registries.DAMAGE_TYPE, ModDamageTypes::bootstrap)
             .add(Registries.CONFIGURED_FEATURE, ModConfiguredFeatures::bootstrap)
             .add(Registries.PLACED_FEATURE, ModPlacedFeatures::bootstrap);
 

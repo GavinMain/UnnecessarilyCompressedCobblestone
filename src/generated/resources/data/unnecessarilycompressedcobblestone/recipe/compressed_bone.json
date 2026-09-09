@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:bone"
+    },
+    "C": {
+      "item": "unnecessarilycompressedcobblestone:compressed_cobblestone_201"
+    }
+  },
+  "pattern": [
+    " C ",
+    " B ",
+    " C "
+  ],
+  "result": {
+    "count": 1,
+    "id": "unnecessarilycompressedcobblestone:compressed_bone"
+  }
+}

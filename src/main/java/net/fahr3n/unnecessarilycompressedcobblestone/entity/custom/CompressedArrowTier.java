@@ -19,17 +19,35 @@ import net.minecraft.world.item.Item;
  */
 public enum CompressedArrowTier {
     /** Twice what a vanilla arrow does. */
-    COBBLESTONE("compressed_cobblestone_arrow", 4.0),
+    COBBLESTONE("compressed_cobblestone_arrow", 4.0, 0.05),
 
     /** Three times the above, which is six times a vanilla arrow. */
-    SUPER("super_compressed_arrow", 4.0 * 3.0);
+    SUPER("super_compressed_arrow", 4.0 * 3.0, 0.05),
+
+    /**
+     * Five times the Super, and the only one of the three that is not simply better than the one
+     * above it: it weighs so much that it is on the ground almost as soon as it leaves the string.
+     * <p>
+     * That is the whole design of it rather than a drawback bolted on. Fired from any ordinary bow
+     * it is a stone dropped at your feet; fired from a bow carrying the Sniper engraving, which
+     * throws an arrow far too fast for a twentieth of a second of fall to matter, it is sixty
+     * points of damage delivered the instant the string is released. The arrow and that engraving
+     * are one weapon in two halves.
+     */
+    HYPER("hyper_compressed_arrow", 4.0 * 3.0 * 5.0, 1.0);
+
+    // The gravity above is written as a literal rather than a named constant because an enum
+    // constant's arguments are evaluated before the enum's own static fields exist. Vanilla's is
+    // 0.05 a tick, which the first two carry; the Hyper's 1.0 is twenty times that.
 
     private final String name;
     private final double baseDamage;
+    private final double gravity;
 
-    CompressedArrowTier(String name, double baseDamage) {
+    CompressedArrowTier(String name, double baseDamage, double gravity) {
         this.name = name;
         this.baseDamage = baseDamage;
+        this.gravity = gravity;
     }
 
     /** What it does before Compression Energy, Power and the speed it was fired at. */
@@ -37,12 +55,25 @@ public enum CompressedArrowTier {
         return this.baseDamage;
     }
 
+    /** How hard it is pulled down each tick, which for one of the three is the point of it. */
+    public double gravity() {
+        return this.gravity;
+    }
+
     public Supplier<? extends Item> item() {
-        return this == COBBLESTONE ? ModItems.COMPRESSED_COBBLESTONE_ARROW : ModItems.SUPER_COMPRESSED_ARROW;
+        return switch (this) {
+            case COBBLESTONE -> ModItems.COMPRESSED_COBBLESTONE_ARROW;
+            case SUPER -> ModItems.SUPER_COMPRESSED_ARROW;
+            case HYPER -> ModItems.HYPER_COMPRESSED_ARROW;
+        };
     }
 
     public Supplier<EntityType<CompressedArrowEntity>> entityType() {
-        return this == COBBLESTONE ? ModEntities.COMPRESSED_COBBLESTONE_ARROW : ModEntities.SUPER_COMPRESSED_ARROW;
+        return switch (this) {
+            case COBBLESTONE -> ModEntities.COMPRESSED_COBBLESTONE_ARROW;
+            case SUPER -> ModEntities.SUPER_COMPRESSED_ARROW;
+            case HYPER -> ModEntities.HYPER_COMPRESSED_ARROW;
+        };
     }
 
     /** Laid out like vanilla's: a 16x5 strip of the shaft with a 5x5 cap for the flights below it. */

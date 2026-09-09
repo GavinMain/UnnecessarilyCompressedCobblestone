@@ -9,6 +9,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.LivingEntity;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.Engraving;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.Engravings;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Item;
@@ -40,5 +42,29 @@ public class CompressedCobblestoneArmorItem extends ArmorItem {
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
         tooltipComponents.add(Component.translatable("item.unbreakable").withStyle(ChatFormatting.BLUE));
+    }
+
+    /**
+     * Whether this piece glides, which is the whole of the Elytra engraving.
+     * <p>
+     * It has to live here rather than in {@code ModEvents} with the other engravings' behaviour,
+     * because vanilla asks the <em>chestplate</em>: {@code LivingEntity.updateFallFlying} clears the
+     * flying flag every tick unless the stack in the chest slot answers this, so nothing an event
+     * does afterwards can hold a player in the air. It is also why the engraving is offered on this
+     * mod's chestplates and no others - see {@link Engraving#ELYTRA}.
+     */
+    @Override
+    public boolean canElytraFly(ItemStack stack, LivingEntity entity) {
+        return this.type == Type.CHESTPLATE && Engravings.has(stack, Engraving.ELYTRA);
+    }
+
+    /**
+     * And it goes on gliding for as long as it is worn. An elytra spends a point of durability every
+     * twenty ticks of flight, which is what NeoForge's default does here; none of this armour ever
+     * takes damage, so there is nothing to spend and nothing to break.
+     */
+    @Override
+    public boolean elytraFlightTick(ItemStack stack, LivingEntity entity, int flightTicks) {
+        return canElytraFly(stack, entity);
     }
 }

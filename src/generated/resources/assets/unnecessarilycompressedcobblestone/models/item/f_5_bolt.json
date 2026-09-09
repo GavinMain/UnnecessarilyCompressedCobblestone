@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "unnecessarilycompressedcobblestone:item/f_5_bolt"
+  }
+}

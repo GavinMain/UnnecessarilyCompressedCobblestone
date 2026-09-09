@@ -1,6 +1,8 @@
 package net.fahr3n.unnecessarilycompressedcobblestone.entity.custom;
 
+import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
@@ -21,12 +23,26 @@ import net.minecraft.world.level.Level;
  * it is made of, how much of it there is, and who it is willing to hit.
  */
 public class CompressedGolemEntity extends IronGolem {
-    private final ServerBossEvent bossEvent = new ServerBossEvent(
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            UnnecessarilyCompressedCobblestone.MOD_ID,
+            "textures/entity/compressed_golem/compressed_golem.png");
+
+    /** Protected because the deeper tiers rename and recolour it rather than keeping one of their own. */
+    protected final ServerBossEvent bossEvent = new ServerBossEvent(
             Component.translatable("entity.unnecessarilycompressedcobblestone.compressed_golem"),
             BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
 
     public CompressedGolemEntity(EntityType<? extends IronGolem> entityType, Level level) {
         super(entityType, level);
+    }
+
+    /**
+     * Which skin this golem is drawn in. It lives on the entity rather than in the renderer so that
+     * a new golem stays what the class javadoc promises - a block registration, an entity and a
+     * texture - with nothing to add on the client side.
+     */
+    public ResourceLocation texture() {
+        return TEXTURE;
     }
 
     /**

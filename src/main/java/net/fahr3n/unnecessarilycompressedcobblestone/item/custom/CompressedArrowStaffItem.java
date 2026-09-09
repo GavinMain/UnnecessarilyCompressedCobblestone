@@ -5,6 +5,8 @@ import org.jetbrains.annotations.Nullable;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedArrowEntity;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedArrowTier;
 import net.fahr3n.unnecessarilycompressedcobblestone.util.CompressionEnergy;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.Engraving;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.Engravings;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -60,8 +62,11 @@ public class CompressedArrowStaffItem extends CompressedStaffItem {
 
         CompressedArrowEntity arrow = new CompressedArrowEntity(CompressedArrowTier.SUPER, level, player,
                 new ItemStack(CompressedArrowTier.SUPER.item().get()), stack);
+        // The Arrow 2 engraving is the one thing that changes what falls: the same rain at the same
+        // rate, with a random harmful effect on every arrow in it.
         arrow.markRain(perSecond * RAIN_TICKS / TICKS_PER_SECOND,
-                Math.max(1, TICKS_PER_SECOND / perSecond), velocity);
+                Math.max(1, TICKS_PER_SECOND / perSecond), velocity,
+                Engravings.has(stack, Engraving.ARROW_2));
 
         Vec3 look = player.getLookAngle();
         arrow.shoot(look.x, look.y, look.z, velocity, 0.0F);

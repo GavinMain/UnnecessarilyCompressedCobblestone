@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "unnecessarilycompressedcobblestone:block/dev_compressed_cobblestone"
+    }
+  }
+}

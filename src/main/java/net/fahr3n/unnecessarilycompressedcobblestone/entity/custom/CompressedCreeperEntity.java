@@ -94,14 +94,8 @@ public class CompressedCreeperEntity extends Creeper {
      */
     private static final float DAMAGE_MULTIPLIER = 3.0F;
 
-    private static final ExplosionDamageCalculator BLAST = new ExplosionDamageCalculator() {
-        @Override
-        public float getEntityDamageAmount(Explosion explosion, Entity entity) {
-            return super.getEntityDamageAmount(explosion, entity) * DAMAGE_MULTIPLIER;
-        }
-    };
-
-    private final ServerBossEvent bossEvent = new ServerBossEvent(
+    /** Protected because the deeper tier renames and recolours it rather than keeping one of its own. */
+    protected final ServerBossEvent bossEvent = new ServerBossEvent(
             Component.translatable("entity.unnecessarilycompressedcobblestone.compressed_creeper"),
             BossEvent.BossBarColor.GREEN, BossEvent.BossBarOverlay.PROGRESS);
 
@@ -212,11 +206,33 @@ public class CompressedCreeperEntity extends Creeper {
         setDeltaMovement(getDeltaMovement().multiply(0.0, 1.0, 0.0));
 
         setCharge(getCharge() + 1);
-        if (getCharge() >= CHARGE_TICKS) {
+        if (getCharge() >= chargeTicks()) {
             detonate();
             setCharge(0);
             this.recovery = RECOVERY_TICKS;
         }
+    }
+
+    /* THE THREE DIALS A DEEPER TIER TURNS */
+
+    /**
+     * How long the wind-up is. Everything that reads the charge goes through this rather than the
+     * constant, {@link #getSwelling} included, so a tier with a shorter fuse swells faster on screen
+     * as well as going off sooner - the two would otherwise disagree and the model would finish
+     * flashing white while the boss stood there.
+     */
+    protected int chargeTicks() {
+        return CHARGE_TICKS;
+    }
+
+    /** How far the blast reaches, which is also the crater it leaves. */
+    protected float explosionRadius() {
+        return EXPLOSION_RADIUS;
+    }
+
+    /** And how much harder it hits than a blast that size normally would; see {@link #DAMAGE_MULTIPLIER}. */
+    protected float damageMultiplier() {
+        return DAMAGE_MULTIPLIER;
     }
 
     /** Blinks to somewhere near {@code target}, the way an enderman does. */
@@ -238,8 +254,19 @@ public class CompressedCreeperEntity extends Creeper {
      * Hurts whatever is standing nearby and tears up the ground, but never the creeper: it is immune
      * to explosion damage, so it walks out of its own blast and starts winding up again.
      */
-    private void detonate() {
-        level().explode(this, null, BLAST, getX(), getY(), getZ(), EXPLOSION_RADIUS, false,
+    protected void detonate() {
+        // Built per blast rather than held as a constant. The multiplier is a dial a subclass turns,
+        // and a static initialiser could only ever have read this class's own figure - a handful of
+        // allocations across a whole fight is the right price for that.
+        float multiplier = damageMultiplier();
+        ExplosionDamageCalculator blast = new ExplosionDamageCalculator() {
+            @Override
+            public float getEntityDamageAmount(Explosion explosion, Entity entity) {
+                return super.getEntityDamageAmount(explosion, entity) * multiplier;
+            }
+        };
+
+        level().explode(this, null, blast, getX(), getY(), getZ(), explosionRadius(), false,
                 Level.ExplosionInteraction.MOB);
     }
 
@@ -284,7 +311,9 @@ public class CompressedCreeperEntity extends Creeper {
      */
     @Override
     public float getSwelling(float partialTicks) {
-        return Mth.clamp(Mth.lerp(partialTicks, this.clientOldCharge, this.clientCharge) / CHARGE_TICKS, 0.0F, 1.0F);
+        return Mth.clamp(
+                Mth.lerp(partialTicks, this.clientOldCharge, this.clientCharge) / chargeTicks(),
+                0.0F, 1.0F);
     }
 
     @Override

@@ -4,6 +4,8 @@
     "unnecessarilycompressedcobblestone:compression",
     "unnecessarilycompressedcobblestone:multicast",
     "unnecessarilycompressedcobblestone:surge",
-    "unnecessarilycompressedcobblestone:silent_cast"
+    "unnecessarilycompressedcobblestone:silent_cast",
+    "unnecessarilycompressedcobblestone:fishing",
+    "unnecessarilycompressedcobblestone:hook"
   ]
 }

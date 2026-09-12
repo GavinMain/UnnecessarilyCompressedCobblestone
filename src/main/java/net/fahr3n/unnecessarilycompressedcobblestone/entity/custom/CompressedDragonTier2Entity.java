@@ -264,11 +264,14 @@ public class CompressedDragonTier2Entity extends CompressedDragonEntity implemen
      * {@code hurt} call with that source and {@code Float.MAX_VALUE} - so refusing that type is what
      * "immune to {@code /kill}" means in code. It also refuses the void, which is the honest cost of
      * the same rule.
+     * <p>
+     * Its own Singularity is two damage types now, since the TNT leaves a black hole before the blast:
+     * the core's bite is refused as well, or a dragon drawn into the hole it threw would be eaten.
      */
     @Override
     public boolean isInvulnerableTo(DamageSource source) {
         return source.is(DamageTypes.FELL_OUT_OF_WORLD) || source.is(ModDamageTypes.SINGULARITY)
-                || super.isInvulnerableTo(source);
+                || source.is(ModDamageTypes.BLACK_HOLE) || super.isInvulnerableTo(source);
     }
 
     /**

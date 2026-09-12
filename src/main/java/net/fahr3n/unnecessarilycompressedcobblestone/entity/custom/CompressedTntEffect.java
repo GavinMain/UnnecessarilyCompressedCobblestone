@@ -572,36 +572,27 @@ public enum CompressedTntEffect {
     },
 
     /**
-     * The Succ TNT with five minutes and a curve on it - see {@code DeferredFill.BlackHole}.
-     * <p>
-     * The difference between the two is entirely time. The Succ TNT is ten seconds of a weak,
-     * constant pull that a sprint gets out of, and it is over before anybody has had to think about
-     * it; this starts weaker than that one does and grows geometrically for five minutes, so it is
-     * an event rather than a shove - somewhere to be got away from rather than somewhere to be
-     * pulled about in. It ends pulling seventy-five times as hard from six times as far, and the
-     * last thirty seconds of it are most of that.
-     * <p>
-     * There is a ball of black concrete in the middle for the whole five minutes, which is what it
-     * reads as from a distance and what everything it drags in piles up against. It is taken away
-     * when the job ends.
+     * Leaves a black hole behind: an invincible entity that lives for two hours, eats every block out
+     * to a hundred times a TNT's radius, pulls in everything around it and swallows what reaches
+     * its core. Only the Black Hole Stopper ends it early - see {@link BlackHoleEntity}.
      */
     BLACKHOLE {
         @Override
         public void detonate(ServerLevel level, CompressedPrimedTntEntity tnt) {
-            DeferredFill.queueBlackHole(level, tnt.position());
+            level.addFreshEntity(new BlackHoleEntity(level, tnt.position()));
             level.playSound(null, tnt.blockPosition(), SoundEvents.PORTAL_TRIGGER, SoundSource.BLOCKS,
                     4.0F, 0.1F);
         }
     },
 
     /**
-     * The Blackhole TNT's five minutes in five seconds, and then the bill.
+     * The Blackhole TNT's two hours in one minute, a flash, and then the bill.
      * <p>
-     * The first half is that charge's own job with nothing changed but the clock: the same pull, the
-     * same geometric growth, the same digging and the same ball of black concrete in the middle,
-     * walked in {@value #SINGULARITY_TICKS} ticks instead of six thousand. Sixty times the speed
-     * turns a thing that had to be walked away from into a thing there is no walking away from -
-     * every figure in it is bounded by construction, so the compression costs nothing but time.
+     * The first part is the same {@link BlackHoleEntity} the Blackhole TNT leaves, given a lifetime
+     * of {@value #SINGULARITY_TICKS} ticks: the same growth to the same final radius, a hundred and
+     * twenty times as fast. The eating keeps its per-tick budget, so in a minute it reaches only a
+     * part of that radius - the pull, the core and the size all reach the whole of it. Then the hole
+     * becomes a flash that swells, holds and fades, and only after that comes the blast.
      * <p>
      * The second half is one explosion, and it is one on purpose rather than the swarm of smaller
      * blasts the Super Compressed TNT uses: a cluster is how you make a <em>crater</em> anybody can
@@ -611,13 +602,13 @@ public enum CompressedTntEffect {
      * exactly. What it costs whatever was left standing is around four hundred and fifty thousand
      * points, out to a reach of sixty-five thousand blocks, which is the whole dimension.
      * <p>
-     * The hole it leaves is the size of the black hole that made it rather than the size of the
-     * blast, and {@code DeferredFill.BlackHole#finish} is where both halves of that are argued.
+     * The hole the blast leaves is a fixed size rather than the size of the blast, and
+     * {@code DeferredFill.detonateSingularity} is where both halves of that are argued.
      */
     SINGULARITY {
         @Override
         public void detonate(ServerLevel level, CompressedPrimedTntEntity tnt) {
-            DeferredFill.queueCollapse(level, tnt.position(), SINGULARITY_TICKS, SINGULARITY_POWER);
+            level.addFreshEntity(new BlackHoleEntity(level, tnt.position(), SINGULARITY_TICKS, SINGULARITY_POWER));
             level.playSound(null, tnt.blockPosition(), SoundEvents.PORTAL_TRIGGER, SoundSource.BLOCKS,
                     4.0F, 0.05F);
         }
@@ -769,10 +760,10 @@ public enum CompressedTntEffect {
     },
 
     /**
-     * Half a minute of wind bursts, a few ticks apart, at a fresh spot and a fresh strength every
-     * time. It breaks nothing and damages nothing: what it does is refuse to let anything in it come
-     * to rest, so a player caught in the middle is knocked from one burst into the next like a ball
-     * still in play. Fall damage is the only thing in it that can kill.
+     * Half a minute of wind bursts, in rings that widen outwards in waves and climb from the ground
+     * as they go. It breaks nothing and damages nothing: a ring shoves everything inside it towards
+     * its middle, so a player caught in it is herded back to the centre and lifted, over and over,
+     * like a ball still in play. Fall damage is the only thing in it that can kill.
      * <p>
      * The bursts are laid down over time by {@link DeferredStrikes} rather than let off together,
      * and that is the effect rather than a budget: a hundred at once is one shove and then silence.
@@ -1581,8 +1572,8 @@ public enum CompressedTntEffect {
     private static final int DOME_RADIUS = 24;
     private static final int DOME_LEVEL = 241;
 
-    /** How long the Singularity's black hole takes to run its whole curve: five seconds. */
-    private static final int SINGULARITY_TICKS = 100;
+    /** How long the Singularity's black hole takes to run its whole curve: one minute. */
+    private static final int SINGULARITY_TICKS = 60 * 20;
 
     /**
      * The largest power this mod will fire as one explosion, and the reason there is a ceiling at
@@ -1650,7 +1641,7 @@ public enum CompressedTntEffect {
     /** Half a minute of being knocked about, which is the whole of the Pinball TNT. */
     private static final int PINBALL_TICKS = 600;
 
-    /** How far out its bursts are let off, and how far above and below. */
+    /** How wide its rings of bursts grow before the next wave starts. */
     private static final double PINBALL_RADIUS = 10.0;
 
     /** How far the pool reaches: three blocks out from where the fuse ran out, and flat. */

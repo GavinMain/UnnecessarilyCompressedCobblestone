@@ -12,11 +12,14 @@ import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModArmorMaterials;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModCreativeModeTabs;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
+import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.BoltItem;
 import net.fahr3n.unnecessarilycompressedcobblestone.potion.ModMobEffects;
 import net.fahr3n.unnecessarilycompressedcobblestone.potion.ModPotions;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.ModMenuTypes;
 import net.fahr3n.unnecessarilycompressedcobblestone.sound.ModSounds;
 import net.fahr3n.unnecessarilycompressedcobblestone.util.ModAttributeCeilings;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.DispenserBlock;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -71,7 +74,12 @@ public class UnnecessarilyCompressedCobblestone {
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
-
+        // Dispensers fire every bolt as a projectile, the way they fire an arrow. Walked off the
+        // registry rather than listed, so all eighty-eight note bolts and every later bolt are
+        // covered. The registry map is not thread safe, hence enqueueWork.
+        event.enqueueWork(() -> BuiltInRegistries.ITEM.stream()
+                .filter(item -> item instanceof BoltItem)
+                .forEach(DispenserBlock::registerProjectileBehavior));
     }
 
     // Adds this mod's items to vanilla creative tabs

@@ -91,6 +91,15 @@ public class ModDamageTypeTagProvider extends TagsProvider<DamageType> {
             tag(bypass).add(ModDamageTypes.DEV_STRIKE);
         }
 
+        // A black hole's bite: the five bypasses and nothing more. It bites every ten ticks, which is
+        // when the invulnerability window has already stopped mattering, so bypasses_cooldown would
+        // add nothing but a way for it to land twice.
+        for (TagKey<DamageType> bypass : List.of(DamageTypeTags.BYPASSES_ARMOR,
+                DamageTypeTags.BYPASSES_SHIELD, DamageTypeTags.BYPASSES_EFFECTS,
+                DamageTypeTags.BYPASSES_RESISTANCE, DamageTypeTags.BYPASSES_ENCHANTMENTS)) {
+            tag(bypass).add(ModDamageTypes.BLACK_HOLE);
+        }
+
         // Bleeding, and the one tag it wants: armour does not answer a cut that is already open.
         // Everything else still does, which matters because the damage is not the point of the
         // effect - the healing lock is, and no damage tag has anything to say about that.
@@ -112,11 +121,11 @@ public class ModDamageTypeTagProvider extends TagsProvider<DamageType> {
         tag(DamageTypeTags.NO_KNOCKBACK).add(ModDamageTypes.COMPRESSED_HUSK);
         tag(DamageTypeTags.PANIC_CAUSES).add(ModDamageTypes.COMPRESSED_HUSK);
 
-        // The mod's own name for its true damage: exactly the three types above that are in all
-        // five bypasses_* tags. It exists because "gets past every form of protection" and "gets
+        // The mod's own name for its true damage: exactly the types above that are in all five
+        // bypasses_* tags. It exists because "gets past every form of protection" and "gets
         // past a boss that refuses damage outright" are different questions, and no vanilla tag
         // answers the second - see ModTags.DamageTypes.TRUE_DAMAGE and SelectiveImmunity.
         tag(ModTags.DamageTypes.TRUE_DAMAGE).add(ModDamageTypes.OMNI_SLASH, ModDamageTypes.DEV_STRIKE,
-                ModDamageTypes.COMPRESSED_SILVERFISH);
+                ModDamageTypes.COMPRESSED_SILVERFISH, ModDamageTypes.BLACK_HOLE);
     }
 }

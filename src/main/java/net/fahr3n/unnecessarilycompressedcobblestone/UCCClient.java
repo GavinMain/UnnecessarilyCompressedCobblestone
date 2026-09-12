@@ -10,6 +10,7 @@ import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.client.NoteLightningBoltRenderer;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.client.ArrowVeilRenderer;
+import net.fahr3n.unnecessarilycompressedcobblestone.entity.client.BlackHoleRenderer;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.client.BossSummonEggRenderer;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.client.CompressedArrowRenderer;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.client.CompressedChickenBossRenderer;
@@ -153,6 +154,7 @@ public class UCCClient {
 
         event.registerEntityRenderer(ModEntities.BOSS_SUMMON_EGG.get(), BossSummonEggRenderer::new);
         event.registerEntityRenderer(ModEntities.ARROW_VEIL.get(), ArrowVeilRenderer::new);
+        event.registerEntityRenderer(ModEntities.BLACK_HOLE.get(), BlackHoleRenderer::new);
         event.registerEntityRenderer(ModEntities.SCYTHE_WAVE.get(), ScytheWaveRenderer::new);
         event.registerEntityRenderer(ModEntities.OMNI_SLASH.get(), OmniSlashRenderer::new);
         // Both ghasts use vanilla's own renderer: they are ghasts, and the mini one is shrunk by

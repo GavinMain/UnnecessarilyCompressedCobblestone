@@ -205,29 +205,6 @@ public final class DeferredFill {
     }
 
     /**
-     * Five minutes of a pull that starts almost politely and ends taking the landscape with it. See
-     * {@link BlackHole}, which is the Singularity's own job with time added to it.
-     */
-    public static void queueBlackHole(ServerLevel level, Vec3 centre) {
-        JOBS.add(new BlackHole(level.dimension(), centre, BlackHole.TICKS, 0.0F));
-    }
-
-    /**
-     * The same black hole, run through in {@code ticks} rather than in five minutes, and finished
-     * with one explosion worth {@code power}.
-     * <p>
-     * It is the {@link BlackHole} job with two of its numbers moved rather than a job of its own,
-     * which is the whole reason the Singularity TNT reads as that charge's third tier: the pull, the
-     * reach and the digging all follow the same curve and the same growth, and what changes is only
-     * how long the curve is walked. Five seconds of it is five minutes of it played at sixty times
-     * the speed - it starts as a nuisance and ends taking the landscape with it, in the time it
-     * takes to look up.
-     */
-    public static void queueCollapse(ServerLevel level, Vec3 centre, int ticks, float power) {
-        JOBS.add(new BlackHole(level.dimension(), centre, ticks, power));
-    }
-
-    /**
      * Takes every block within {@code radius} of {@code centre} that can be taken at all, one
      * horizontal layer a tick. See {@link Crater}.
      */
@@ -2163,275 +2140,53 @@ public final class DeferredFill {
     }
 
     /**
-     * The Singularity, given five minutes and a curve.
+     * How wide a hole a Singularity's blast leaves, in blocks. Not the blast's own power.
      * <p>
-     * It does the same three things that one does - drag what is loose towards the middle, tear the
-     * ground up and throw it in after them, and draw the middle - and every one of the three grows
-     * with time rather than being a constant. That is the whole difference between them, and it is
-     * what makes this a hazard rather than a shove: for the first minute it is a nuisance that a
-     * walk gets out of, and by the fifth it pulls harder than a sprint from further away than
-     * anybody notices in time.
-     * <p>
-     * The growth is geometric, {@code pow(GROWTH, progress)}, so almost all of it happens at the end
-     * rather than being spread evenly - which is what "gets stronger over time" has to mean if the
-     * first four minutes are to be survivable at all. All three are bounded by construction, because
-     * {@code progress} runs from 0 to 1 and no further: the pull ends at {@code PULL * GROWTH}, the
-     * reach at {@code RADIUS * RADIUS_GROWTH}, and the digging at {@link #MAX_BLOCKS_PER_TICK}. A
-     * radius is a query on the world and is bounded on principle, whatever is driving it.
-     * <p>
-     * The middle is a real ball of black concrete rather than a particle effect, placed once at the
-     * start and taken away at the end. It is what the thing reads as from any distance, it is why
-     * what is dragged in piles up around the middle instead of inside it, and being blocks is also
-     * why the digging skips its own core - a black hole that tore itself up would be gone inside ten
-     * seconds. Only black concrete is taken away again, so one that finished against somebody's wall
-     * does not take the wall with it.
+     * The power and the hole cannot be the same number. A blast of the Singularity's power would be a
+     * hole tens of thousands of blocks across; there is no writing that, deferred or otherwise. So the
+     * blast's <em>damage</em> is the full figure - vanilla's falloff is linear in the radius and
+     * reaches twice it, which is already the whole dimension - and the hole is a taste decision: a
+     * quarter of a kilometre across, nine million positions, and a good minute of {@link Crater}
+     * walking it layer by layer.
      */
-    private static final class BlackHole implements Job {
-        /** Five minutes. */
-        private static final int TICKS = 5 * 60 * 20;
+    private static final int SINGULARITY_CRATER_RADIUS = 128;
 
-        /** How hard it pulls at the very middle on the first tick, in blocks per tick of delta. */
-        private static final double PULL = 0.02;
-
-        /** How much harder it pulls on the last tick than on the first. */
-        private static final double GROWTH = 75.0;
-
-        /** How far the pull reaches on the first tick, and how much wider it gets by the last. */
-        private static final double RADIUS = 8.0;
-        private static final double RADIUS_GROWTH = 6.0;
-
-        /** How much of the ground is torn up each tick, at the start and at the end. */
-        private static final int BLOCKS_PER_TICK = 1;
-        private static final int MAX_BLOCKS_PER_TICK = 8;
-
-        /** How far out the ground is taken from, as a fraction of the reach. */
-        private static final double DIG_FRACTION = 0.7;
-
-        /** The black ball in the middle, and the one thing the digging is not allowed to touch. */
-        private static final double CORE_RADIUS = 2.0;
-
-        /** Nothing is dragged out of the last half block, or a mob at the middle jitters. */
-        private static final double DEAD_ZONE = 0.5;
-
-        /**
-         * How wide a hole the finishing blast leaves, in blocks. Not the blast's own power, and no
-         * longer the reach the pull ended at either.
-         * <p>
-         * The power and the hole cannot be the same number and it is worth being plain about why. A
-         * blast of {@code CompressedTntEffect.SINGULARITY_POWER} would be a hole tens of thousands
-         * of blocks across; there is no writing that, deferred or otherwise, and no world to write
-         * it in. So the blast's <em>damage</em> is the full figure - vanilla's falloff is linear in
-         * the radius and reaches twice it, which is already the whole dimension and cannot be made
-         * to mean more - and the hole is the one half of this charge that can honestly get bigger.
-         * <p>
-         * That leaves the size of the hole a taste decision rather than a derivation, and this is
-         * the figure: a quarter of a kilometre across, nine million positions, and a good minute of
-         * {@link Crater} walking it. It is deliberately far past the reach the pull ended at - the
-         * black hole is what pulls you in, and this is what it leaves behind, and the second of
-         * those should be the one you can see from another chunk.
-         */
-        private static final int CRATER_RADIUS = 128;
-
-        private final ResourceKey<Level> dimension;
-        private final Vec3 centre;
-
-        /** How long this one runs for: {@link #TICKS} for the charge, far less for a collapse. */
-        private final int limit;
-
-        /**
-         * The blast it ends on, or zero for a black hole that simply stops. It is a power rather
-         * than a flag because the Singularity TNT's whole second half is that number.
-         */
-        private final float power;
-
-        private int ticks;
-
-        private BlackHole(ResourceKey<Level> dimension, Vec3 centre, int limit, float power) {
-            this.dimension = dimension;
-            this.centre = centre;
-            this.limit = limit;
-            this.power = power;
-        }
-
-        @Override
-        public ResourceKey<Level> dimension() {
-            return this.dimension;
-        }
-
-        @Override
-        public boolean advance(ServerLevel level) {
-            BlockPos origin = BlockPos.containing(this.centre);
-            if (!level.isLoaded(origin)) {
-                return true;
+    /**
+     * The one explosion a Singularity ends on, and the hole it leaves.
+     * <p>
+     * Fired as a real explosion, so the damage, the shove, the particles and the noise are all
+     * vanilla's own and everything with an opinion about an explosion has it - armour, Protection,
+     * Blast Protection, {@code EXPLOSION_KNOCKBACK_RESISTANCE} and any other mod's reduction.
+     * <p>
+     * The blocks cannot be done by explosion, for two separate reasons. Every compression level from
+     * {@code ModBlocks.HARDENED_LEVEL} up carries an explosion resistance nothing gets through, and
+     * vanilla's block phase at this radius is hundreds of millions of block reads. So the calculator
+     * refuses the block phase outright - a resistance nothing survives kills every ray on its first
+     * step - and the hole is taken afterwards by {@link Crater}.
+     */
+    public static void detonateSingularity(ServerLevel level, Vec3 centre, float power) {
+        ExplosionDamageCalculator calculator = new ExplosionDamageCalculator() {
+            @Override
+            public Optional<Float> getBlockExplosionResistance(Explosion explosion, BlockGetter reader,
+                                                               BlockPos pos, BlockState state,
+                                                               FluidState fluid) {
+                return Optional.of(Float.MAX_VALUE);
             }
 
-            if (this.ticks == 0) {
-                core(level, Blocks.BLACK_CONCRETE.defaultBlockState());
-            }
-
-            double progress = (double) this.ticks / this.limit;
-            double factor = Math.pow(GROWTH, progress);
-            double radius = RADIUS * Math.pow(RADIUS_GROWTH, progress);
-
-            pull(level, PULL * factor, radius);
-            dig(level, radius * DIG_FRACTION, Math.min(MAX_BLOCKS_PER_TICK,
-                    BLOCKS_PER_TICK + (int) (progress * MAX_BLOCKS_PER_TICK)));
-
-            level.sendParticles(ParticleTypes.SMOKE, this.centre.x, this.centre.y, this.centre.z,
-                    40, CORE_RADIUS, CORE_RADIUS, CORE_RADIUS, 0.02);
-            level.sendParticles(ParticleTypes.PORTAL, this.centre.x, this.centre.y, this.centre.z,
-                    30, radius * 0.3, radius * 0.3, radius * 0.3, 0.8);
-
-            if (++this.ticks < this.limit) {
+            @Override
+            public boolean shouldBlockExplode(Explosion explosion, BlockGetter reader, BlockPos pos,
+                                              BlockState state, float power) {
                 return false;
             }
+        };
 
-            core(level, Blocks.AIR.defaultBlockState());
+        // The mod's own type rather than minecraft:explosion: it is worth several hundred thousand
+        // points, so something has to be able to say "not that one" about it without saying it
+        // about every creeper.
+        level.explode(null, level.damageSources().source(ModDamageTypes.SINGULARITY), calculator,
+                centre.x, centre.y, centre.z, power, false, Level.ExplosionInteraction.NONE);
 
-            if (this.power > 0.0F) {
-                finish(level);
-            }
-
-            return true;
-        }
-
-        /**
-         * The one explosion a collapse ends on, and the hole it leaves.
-         * <p>
-         * Fired as a real explosion, so the damage, the shove, the particles and the noise are all
-         * vanilla's own and everything in the game that has an opinion about an explosion has it -
-         * armour, Protection, Blast Protection, {@code EXPLOSION_KNOCKBACK_RESISTANCE} and any other
-         * mod's reduction. The damage is left entirely alone for the same reason the power is not
-         * clamped further: vanilla's figure is {@code 7 * (radius * 2) + 1} at the centre, linear in
-         * the radius, so a blast of this power already hits for what this power ought to hit for and
-         * scaling it would be saying the same thing twice.
-         * <p>
-         * The blocks are the part that cannot be done by explosion, and there are two separate
-         * reasons rather than one. Every compression level from {@code ModBlocks.HARDENED_LEVEL} up
-         * carries an explosion resistance of three and a half million, so no power gets through one;
-         * and vanilla's block phase is sixteen cubed rays each stepping a fifth of a block, which at
-         * this radius is hundreds of millions of block reads and a set of positions to match. So the
-         * calculator here refuses the block phase outright - a resistance nothing survives kills
-         * every ray on its first step - and the hole is taken afterwards by {@link Crater}, at a
-         * size a world can hold.
-         */
-        private void finish(ServerLevel level) {
-            ExplosionDamageCalculator calculator = new ExplosionDamageCalculator() {
-                @Override
-                public Optional<Float> getBlockExplosionResistance(Explosion explosion, BlockGetter reader,
-                                                                   BlockPos pos, BlockState state,
-                                                                   FluidState fluid) {
-                    // Every ray dies on its first step, which is what makes a blast this size
-                    // affordable at all.
-                    return Optional.of(Float.MAX_VALUE);
-                }
-
-                @Override
-                public boolean shouldBlockExplode(Explosion explosion, BlockGetter reader, BlockPos pos,
-                                                  BlockState state, float power) {
-                    return false;
-                }
-            };
-
-            // The mod's own type rather than minecraft:explosion, and the only blast here that has
-            // one: it is worth several hundred thousand points, so something has to be able to say
-            // "not that one" about it without saying it about every creeper. Only the Singularity
-            // reaches this method - a plain black hole is queued with a power of zero and simply
-            // stops - so the type is exactly as narrow as it should be.
-            level.explode(null, level.damageSources().source(ModDamageTypes.SINGULARITY), calculator,
-                    this.centre.x, this.centre.y, this.centre.z, this.power, false,
-                    Level.ExplosionInteraction.NONE);
-
-            queueCrater(level, this.centre, CRATER_RADIUS);
-        }
-
-        /** Everything in reach, moved a little further in - and further every minute. */
-        private void pull(ServerLevel level, double strength, double radius) {
-            AABB reach = new AABB(this.centre, this.centre).inflate(radius);
-
-            for (Entity entity : level.getEntities((Entity) null, reach, entity -> !entity.isSpectator())) {
-                Vec3 toCentre = this.centre.subtract(entity.position());
-                double distance = toCentre.length();
-                if (distance < DEAD_ZONE || distance > radius) {
-                    continue;
-                }
-
-                double pull = strength * (1.0 - distance / radius);
-                entity.setDeltaMovement(entity.getDeltaMovement().add(toCentre.scale(pull / distance)));
-
-                // A player's own client is what actually moves them, so the server has to say so.
-                entity.hurtMarked = true;
-            }
-        }
-
-        /**
-         * A few blocks of the ground, thrown in after them. Darts rather than a walk, for the reason
-         * the Singularity throws them: the sphere is far too large to iterate and what is wanted out
-         * of it is sparse, and a cube root keeps the draw even through the volume.
-         */
-        private void dig(ServerLevel level, double radius, int count) {
-            RandomSource random = level.random;
-
-            for (int i = 0; i < count; i++) {
-                double reach = Math.cbrt(random.nextDouble()) * radius;
-
-                // Never its own core: the black hole is not allowed to eat itself.
-                if (reach <= CORE_RADIUS + 1.0) {
-                    continue;
-                }
-
-                double theta = random.nextDouble() * Math.PI * 2.0;
-                double y = random.nextDouble() * 2.0 - 1.0;
-                double ring = Math.sqrt(1.0 - y * y);
-
-                BlockPos pos = BlockPos.containing(
-                        this.centre.x + reach * ring * Math.cos(theta),
-                        this.centre.y + reach * y,
-                        this.centre.z + reach * ring * Math.sin(theta));
-
-                if (!level.isLoaded(pos)) {
-                    continue;
-                }
-
-                BlockState state = level.getBlockState(pos);
-                if (state.isAir() || !state.getFluidState().isEmpty() || state.hasBlockEntity()
-                        || state.getDestroySpeed(level, pos) < 0.0F) {
-                    continue;
-                }
-
-                FallingBlockEntity.fall(level, pos, state);
-            }
-        }
-
-        /** Writes the ball in the middle, which is the same call that takes it away again. */
-        private void core(ServerLevel level, BlockState state) {
-            BlockPos origin = BlockPos.containing(this.centre);
-            int reach = Mth.ceil(CORE_RADIUS);
-            BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
-
-            for (int dx = -reach; dx <= reach; dx++) {
-                for (int dy = -reach; dy <= reach; dy++) {
-                    for (int dz = -reach; dz <= reach; dz++) {
-                        if (dx * dx + dy * dy + dz * dz > CORE_RADIUS * CORE_RADIUS) {
-                            continue;
-                        }
-
-                        pos.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
-                        if (!level.isLoaded(pos)
-                                || level.getBlockState(pos).getDestroySpeed(level, pos) < 0.0F) {
-                            continue;
-                        }
-
-                        // Taking it away only takes away what was put there.
-                        if (state.isAir() && !level.getBlockState(pos).is(Blocks.BLACK_CONCRETE)) {
-                            continue;
-                        }
-
-                        level.setBlock(pos, state, FLAGS);
-                    }
-                }
-            }
-        }
+        queueCrater(level, centre, SINGULARITY_CRATER_RADIUS);
     }
 
     /**

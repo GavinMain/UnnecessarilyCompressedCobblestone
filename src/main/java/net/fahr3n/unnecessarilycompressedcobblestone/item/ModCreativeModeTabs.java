@@ -102,6 +102,7 @@ public class ModCreativeModeTabs {
                         output.accept(ModItems.COMPRESSED_HEALING_STAFF);
                         output.accept(ModItems.COMPRESSED_SUMMONING_STAFF);
                         output.accept(ModItems.ARROW_VEIL);
+                        output.accept(ModItems.BLACK_HOLE_STOPPER);
                         output.accept(ModItems.COMPRESSED_FIREWORK);
                         output.accept(ModItems.COMPRESSED_FISHING_ROD);
                         output.accept(ModItems.COMPRESSION_BOMB);

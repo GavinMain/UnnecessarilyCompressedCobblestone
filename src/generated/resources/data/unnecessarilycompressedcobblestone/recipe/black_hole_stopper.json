@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": {
+      "item": "unnecessarilycompressedcobblestone:compressed_cobblestone_242"
+    },
+    "E": {
+      "item": "minecraft:ender_eye"
+    },
+    "O": {
+      "item": "minecraft:crying_obsidian"
+    }
+  },
+  "pattern": [
+    "OEO",
+    "ECE",
+    "OEO"
+  ],
+  "result": {
+    "count": 1,
+    "id": "unnecessarilycompressedcobblestone:black_hole_stopper"
+  }
+}

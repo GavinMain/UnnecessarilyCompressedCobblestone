@@ -22,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 
 /**
@@ -72,10 +73,15 @@ public class CompressedHealingStaffItem extends CompressedStaffItem {
     public static final float BASE_HEALING = 8.0F;
 
     /**
-     * How much healing one digit of Compression Energy adds, in health points. One, which is half a
-     * heart - so a staff inscribed to twenty digits throws a bottle worth fourteen hearts.
+     * How much healing one digit of Compression Energy adds, in health points. Ten, which is five
+     * hearts - so a staff inscribed to twenty digits throws a bottle worth over a hundred hearts, and
+     * a fully inscribed one heals thousands. Anything less falls hopelessly behind the health the
+     * inscribed armour hands out, which is what this is meant to refill.
      */
-    public static final float HEALING_PER_DIGIT = 1.0F;
+    public static final float HEALING_PER_DIGIT = 10.0F;
+
+    /** Where the exact figure rides on the thrown bottle. See {@link #contents}. */
+    public static final String HEALING_TAG = "unnecessarilycompressedcobblestone_mending";
 
     /**
      * The colour a Potion of Healing's cloud and glass are. It is stated here rather than taken from
@@ -113,13 +119,13 @@ public class CompressedHealingStaffItem extends CompressedStaffItem {
      * Laser's Damage augments follow: an upgrade written against a staff's power should be worth as
      * much on a bare staff as on a deep one.
      * <p>
-     * Clamped at 256 because it travels as an effect amplifier, which vanilla pins to 0-255 on the
-     * way in; a staff pushed past that simply stops getting better rather than wrapping round.
+     * Not clamped. It used to travel as the effect amplifier, which vanilla pins to 0-255, and that
+     * capped every staff at 256 points however deep it was inscribed; the figure now rides on the
+     * bottle itself instead.
      */
-    public static int healing(ItemStack stack, Level level) {
-        float healing = (BASE_HEALING + CompressionEnergy.bonus(stack) * HEALING_PER_DIGIT)
-                * surge(stack, level);
-        return Math.max(1, Math.min(256, Math.round(healing)));
+    public static float healing(ItemStack stack, Level level) {
+        return Math.max(1.0F, (BASE_HEALING + CompressionEnergy.bonus(stack) * HEALING_PER_DIGIT)
+                * surge(stack, level));
     }
 
     /**
@@ -155,7 +161,8 @@ public class CompressedHealingStaffItem extends CompressedStaffItem {
     @Override
     protected void release(ServerLevel level, Player player, ItemStack stack) {
         int bottles = multicast(stack, level);
-        PotionContents contents = contents(stack, level);
+        float healing = healing(stack, level);
+        PotionContents contents = contents(healing);
 
         for (int i = 0; i < bottles; i++) {
             // Centred on where the player is looking: one bottle goes exactly there, and any
@@ -164,7 +171,7 @@ public class CompressedHealingStaffItem extends CompressedStaffItem {
                     + (i - (bottles - 1) / 2.0F) * MULTICAST_SPREAD_DEGREES;
 
             ThrownPotion bottle = new ThrownPotion(level, player);
-            bottle.setItem(bottle(contents));
+            bottle.setItem(bottle(contents, healing));
             bottle.shootFromRotation(player, player.getXRot(), yaw,
                     THROW_PITCH_OFFSET, THROW_SPEED, THROW_INACCURACY);
             level.addFreshEntity(bottle);
@@ -187,21 +194,25 @@ public class CompressedHealingStaffItem extends CompressedStaffItem {
      * see, and differs only in that the number behind it is the staff's rather than vanilla's.
      * {@link ModMobEffects#MENDING} keeps the one behaviour that mattered: the undead take it as
      * damage.
+     * <p>
+     * The amplifier is only the figure as far as 256 goes, since vanilla clamps it there; the exact
+     * figure is written onto the bottle under {@link #HEALING_TAG}, and Mending reads it off the
+     * bottle that splashed in preference to the amplifier.
      */
-    private static PotionContents contents(ItemStack stack, Level level) {
+    private static PotionContents contents(float healing) {
         List<MobEffectInstance> effects = new ArrayList<>(1);
-        // Duration 1 because the effect is instantaneous; the amplifier is the whole figure, since
-        // Mending is a point per level rather than vanilla's doubling.
-        effects.add(new MobEffectInstance(ModMobEffects.MENDING, 1, healing(stack, level) - 1,
-                false, true, true));
+        // Duration 1 because the effect is instantaneous.
+        effects.add(new MobEffectInstance(ModMobEffects.MENDING, 1,
+                Math.min(255, Math.round(healing) - 1), false, true, true));
 
         return new PotionContents(Optional.empty(), Optional.of(HEALING_COLOR), effects);
     }
 
-    /** The splash potion item the thrown entity carries and is drawn as. */
-    private static ItemStack bottle(PotionContents contents) {
+    /** The splash potion item the thrown entity carries and is drawn as, with the exact figure on it. */
+    private static ItemStack bottle(PotionContents contents, float healing) {
         ItemStack bottle = new ItemStack(Items.SPLASH_POTION);
         bottle.set(DataComponents.POTION_CONTENTS, contents);
+        CustomData.update(DataComponents.CUSTOM_DATA, bottle, tag -> tag.putFloat(HEALING_TAG, healing));
         return bottle;
     }
 

@@ -93,6 +93,7 @@ public class ModItemModelProvider extends ItemModelProvider {
         basicItem(ModItems.REST_BOLT.get());
         basicItem(ModItems.LONG_REST_BOLT.get());
         basicItem(ModItems.ARROW_VEIL.get());
+        basicItem(ModItems.BLACK_HOLE_STOPPER.get());
         basicItem(ModItems.COMPRESSED_FIREWORK.get());
 
         // Spawn eggs are the vanilla template tinted by the two colours on the item itself.

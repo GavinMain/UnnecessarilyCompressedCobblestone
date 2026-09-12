@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 import org.jetbrains.annotations.Nullable;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.BoltProjectileEntity;
+import net.fahr3n.unnecessarilycompressedcobblestone.item.ModItems;
 import net.fahr3n.unnecessarilycompressedcobblestone.util.CompressionEnergy;
 import net.fahr3n.unnecessarilycompressedcobblestone.util.Engraving;
 import net.fahr3n.unnecessarilycompressedcobblestone.util.Engravings;
@@ -69,6 +70,15 @@ public class BoltLauncherItem extends BowItem {
     @Override
     public Predicate<ItemStack> getAllSupportedProjectiles() {
         return BOLTS;
+    }
+
+    /**
+     * What a creative player with no bolts fires. Left alone it is vanilla's arrow, which is not a
+     * {@link BoltItem} and so flies and lands as nothing.
+     */
+    @Override
+    public ItemStack getDefaultCreativeAmmo(@Nullable Player player, ItemStack launcher) {
+        return new ItemStack(ModItems.COMPRESSED_VANILLA_BOLT.get());
     }
 
     /**

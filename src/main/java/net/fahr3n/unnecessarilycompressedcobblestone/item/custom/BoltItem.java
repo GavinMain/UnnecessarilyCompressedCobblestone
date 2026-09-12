@@ -1,9 +1,15 @@
 package net.fahr3n.unnecessarilycompressedcobblestone.item.custom;
 
+import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.BoltProjectileEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ProjectileItem;
+import net.minecraft.world.level.Level;
 
 /**
  * Something a Lightning Core can be loaded with. A core on its own does nothing at all; what it
@@ -21,13 +27,22 @@ import net.minecraft.world.item.ItemStack;
  * business - the vanilla bolt turns it into how far the thunder carries - but it is always the same
  * shape of number, so {@link #strength(int)} is here rather than in any one bolt. The launcher
  * always hands down a full one: a shot bolt is as loud as it can be, whatever else is done to it.
+ * <p>
+ * Every bolt is also a {@link ProjectileItem}, which is what a dispenser asks of an arrow: it fires
+ * the same {@link BoltProjectileEntity} the launcher does, so a dispensed bolt lands and strikes
+ * exactly as a shot one. The behaviour is registered for every bolt in common setup.
  */
-public abstract class BoltItem extends Item {
+public abstract class BoltItem extends Item implements ProjectileItem {
     /** A full redstone signal, which is the strength every bolt is written against. */
     public static final int MAX_SIGNAL = 15;
 
     public BoltItem(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public Projectile asProjectile(Level level, Position pos, ItemStack stack, Direction direction) {
+        return new BoltProjectileEntity(level, pos.x(), pos.y(), pos.z(), stack);
     }
 
     /**

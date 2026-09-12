@@ -786,6 +786,18 @@ public class ModRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlockedBy(getHasName(ModBlocks.byLevel(64).get()), has(ModBlocks.byLevel(64).get()))
                 .save(recipeOutput);
 
+        // The black hole's answer: the same level 242 stone the Blackhole TNT is made of, so anyone
+        // who can make one can stop one, held between eyes of ender and crying obsidian.
+        ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, ModItems.BLACK_HOLE_STOPPER.get())
+                .pattern("OEO")
+                .pattern("ECE")
+                .pattern("OEO")
+                .define('O', Items.CRYING_OBSIDIAN)
+                .define('E', Items.ENDER_EYE)
+                .define('C', ModBlocks.byLevel(242).get())
+                .unlockedBy(getHasName(ModBlocks.BLACKHOLE_TNT.get()), has(ModBlocks.BLACKHOLE_TNT.get()))
+                .save(recipeOutput);
+
         // The core is the inscriber's shape again, in level 60 stone around nothing: it holds a
         // bolt rather than containing anything of its own.
         ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, ModBlocks.LIGHTNING_CORE.get())

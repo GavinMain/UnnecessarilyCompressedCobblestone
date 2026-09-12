@@ -60,6 +60,16 @@ public class BoltProjectileEntity extends AbstractArrow implements ItemSupplier 
     }
 
     /**
+     * A bolt with nobody behind it, as a dispenser fires one. It carries no launcher, so it lands with
+     * no bonus damage and at a full signal - the same strike the bolt makes sitting on a core at 15.
+     */
+    public BoltProjectileEntity(Level level, double x, double y, double z, ItemStack bolt) {
+        super(ModEntities.BOLT_PROJECTILE.get(), x, y, z, level, bolt.copyWithCount(1), null);
+        setBolt(bolt);
+        this.pickup = Pickup.DISALLOWED;
+    }
+
+    /**
      * Never picked up and never dropped, whatever it lands on. A bolt is spent the moment its
      * lightning falls, which is the one place this differs from an arrow that misses.
      */

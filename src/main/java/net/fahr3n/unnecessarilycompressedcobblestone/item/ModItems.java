@@ -9,6 +9,7 @@ import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobb
 import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.CompressedCobblestoneArmorItem;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.ModEntities;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.ArrowVeilItem;
+import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.BlackHoleStopperItem;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.BoltLauncherItem;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.TntLauncherItem;
 import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.BossSpawnEggItem;
@@ -480,6 +481,10 @@ public class ModItems {
      */
     public static final DeferredItem<ArrowVeilItem> ARROW_VEIL =
             ITEMS.register("arrow_veil", () -> new ArrowVeilItem(new Item.Properties().stacksTo(1)));
+
+    /** Hit a black hole with this, or use it on one, and it collapses. Spent in the doing. */
+    public static final DeferredItem<BlackHoleStopperItem> BLACK_HOLE_STOPPER =
+            ITEMS.register("black_hole_stopper", () -> new BlackHoleStopperItem(new Item.Properties().stacksTo(16)));
 
     /**
      * The first bolt, and the plainest: a core loaded with this throws exactly what a thunderstorm

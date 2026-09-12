@@ -21,14 +21,6 @@ import net.minecraft.world.item.TooltipFlag;
  * second button is for.
  */
 public class CompositionBoltItem extends BoltItem {
-    /**
-     * How wide it plays. The same reasoning as every other song here - below a volume of 1 a sound
-     * carries a flat sixteen blocks and fades over them, so a wide ring costs the music more than it
-     * gains - and tighter still than the Moonlight Bolt's, because a composed song is short and
-     * usually played at something.
-     */
-    private static final double RADIUS = 2.0;
-
     public CompositionBoltItem(Properties properties) {
         super(properties);
     }
@@ -36,12 +28,18 @@ public class CompositionBoltItem extends BoltItem {
     /**
      * A written bolt plays its sheet; a blank one does nothing at all, rather than falling back on
      * some default strike - a blank sheet is blank.
+     * <p>
+     * Every note is a note bolt in all but name: it lands exactly where the strike was called, at
+     * that height, and hits for what a note bolt would - vanilla lightning plus whatever the launcher
+     * added. Scattering the notes in a ring on the ground, the way the datapack songs are played,
+     * made a composed bolt shot at something in the air miss it entirely.
      */
     @Override
     public void strike(ServerLevel level, BlockPos pos, ItemStack stack, int signal, float bonusDamage) {
         List<Integer> song = Composition.get(stack);
         if (!song.isEmpty()) {
-            DeferredStrikes.queueSong(level, pos, Composition.toSong(song), RADIUS, strength(signal));
+            DeferredStrikes.playSong(level, pos, Composition.toSong(song), 0.0, strength(signal),
+                    CompressedVanillaBoltItem.VANILLA_DAMAGE + Math.max(0.0F, bonusDamage));
         }
     }
 

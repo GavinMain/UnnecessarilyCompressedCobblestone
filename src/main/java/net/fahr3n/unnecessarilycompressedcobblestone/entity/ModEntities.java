@@ -24,6 +24,7 @@ import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedCre
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedGolemEntity;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedGolemTier2Entity;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedGuardianEntity;
+import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.BlackHoleEntity;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedHorseEntity;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedBeeEntity;
 import net.fahr3n.unnecessarilycompressedcobblestone.entity.custom.CompressedHuskEntity;
@@ -497,6 +498,20 @@ public class ModEntities {
                     () -> EntityType.Builder.<ArrowVeilEntity>of(ArrowVeilEntity::new, MobCategory.MISC)
                             .sized(0.5F, 0.5F).clientTrackingRange(10)
                             .build("arrow_veil"));
+
+    /**
+     * What a Blackhole TNT leaves behind. MISC because it is an event rather than a creature. The
+     * registered size is only a starting point - the box is the core and grows with age, see
+     * {@code BlackHoleEntity#makeBoundingBox} - and the tracking range is the largest the game offers,
+     * because a thing that eats a disc eight hundred blocks across by the end should be seen from further off
+     * than a mob.
+     */
+    public static final Supplier<EntityType<BlackHoleEntity>> BLACK_HOLE =
+            ENTITY_TYPES.register("black_hole",
+                    () -> EntityType.Builder.<BlackHoleEntity>of(BlackHoleEntity::new, MobCategory.MISC)
+                            .sized(2.0F, 2.0F).clientTrackingRange(32).updateInterval(20)
+                            .fireImmune()
+                            .build("black_hole"));
 
     /**
      * The dragon egg every boss in this mod is called up out of. MISC because it is an animation

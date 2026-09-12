@@ -138,6 +138,15 @@ public class ModDamageTypes {
      */
     public static final ResourceKey<DamageType> DEV_STRIKE = key("dev_strike");
 
+    /**
+     * What a black hole's core does to whatever reaches it. True damage - the five
+     * {@code bypasses_*} tags and {@code #ucc:true_damage} - because nothing is armoured against
+     * being swallowed, and a boss that refuses kinds of attack has nothing to say about this one
+     * either. Not in {@code bypasses_cooldown}: it bites every ten ticks, which is exactly when
+     * the invulnerability window stops swallowing a repeat of the same figure.
+     */
+    public static final ResourceKey<DamageType> BLACK_HOLE = key("black_hole");
+
     public static void bootstrap(BootstrapContext<DamageType> context) {
         // Exhaustion 0.1 is vanilla's figure for an ordinary mob attack; the scaling is the one
         // vanilla gives mob damage, so difficulty still means what it usually does.
@@ -172,6 +181,8 @@ public class ModDamageTypes {
         // A player's blow with a block in their hand: a player attack's exhaustion, and no
         // difficulty scaling, because a dev tool that hits for less on peaceful is not a dev tool.
         context.register(DEV_STRIKE, new DamageType("devStrike", DamageScaling.NEVER, 0.1F));
+
+        context.register(BLACK_HOLE, new DamageType("blackHole", DamageScaling.NEVER, 0.0F));
     }
 
     private static ResourceKey<DamageType> key(String name) {

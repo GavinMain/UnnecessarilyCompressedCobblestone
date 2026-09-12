@@ -16,8 +16,9 @@ import net.minecraft.world.item.ItemStack;
  * single note bolt's strike.
  * <p>
  * The core strikes once a second while it is powered and a song is minutes long, so a second strike
- * arriving mid-performance is dropped rather than layered - {@link DeferredStrikes#queueSong} holds
- * that rule, since it is the only thing that knows what is already playing.
+ * arriving mid-performance is dropped rather than layered. The core holds that rule itself, through
+ * {@link DeferredStrikes#isPlayingAt}, since it is the repeating trigger: a bolt shot twice at the
+ * same spot is two performances.
  * <p>
  * Which song is a datapack file under {@code data/<namespace>/songs/<name>.txt}, so a pack can
  * replace what this plays without touching the mod. A new song bolt is this class again with
@@ -43,7 +44,7 @@ public class SongBoltItem extends BoltItem {
     /** The bonus damage is not passed on: a song is a hundred bolts, and none of them is the shot. */
     @Override
     public void strike(ServerLevel level, BlockPos pos, ItemStack stack, int signal, float bonusDamage) {
-        DeferredStrikes.queueSong(level, pos, LightningSong.get(level.getServer(), this.song), RADIUS,
-                strength(signal));
+        DeferredStrikes.playSong(level, pos, LightningSong.get(level.getServer(), this.song), RADIUS,
+                strength(signal), DeferredStrikes.DEFAULT_DAMAGE);
     }
 }

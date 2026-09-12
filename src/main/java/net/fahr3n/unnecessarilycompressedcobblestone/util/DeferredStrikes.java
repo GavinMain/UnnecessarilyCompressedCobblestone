@@ -110,8 +110,28 @@ public final class DeferredStrikes {
      */
     public static void queueSong(ServerLevel level, BlockPos origin, LightningSong song, double radius,
                                  float volumeScale) {
-        if (!song.notes().isEmpty() && !isPlayingAt(level, origin)) {
-            VOLLEYS.add(new Song(level.dimension(), origin, song, radius, volumeScale));
+        if (!isPlayingAt(level, origin)) {
+            playSong(level, origin, song, radius, volumeScale, DEFAULT_DAMAGE);
+        }
+    }
+
+    /** What a song's bolts hit for when nothing names a figure: vanilla lightning's own. */
+    public static final float DEFAULT_DAMAGE = -1.0F;
+
+    /**
+     * A song with no guard against one already playing, for a bolt's own strike. A shot bolt is one
+     * strike per shot, so two shots at the same target are two performances; the repeating trigger
+     * that needs the guard - the Lightning Core - checks {@link #isPlayingAt} itself.
+     *
+     * @param radius how wide the notes scatter. At 0 every note lands exactly on {@code origin},
+     *               at its own height rather than on the ground under it, which is what a bolt that
+     *               hit something in the air needs
+     * @param damage what each note's bolt hits for, or {@link #DEFAULT_DAMAGE} for vanilla's
+     */
+    public static void playSong(ServerLevel level, BlockPos origin, LightningSong song, double radius,
+                                float volumeScale, float damage) {
+        if (!song.notes().isEmpty()) {
+            VOLLEYS.add(new Song(level.dimension(), origin, song, radius, volumeScale, damage));
         }
     }
 
@@ -122,8 +142,9 @@ public final class DeferredStrikes {
     }
 
     /**
-     * Half a minute of wind bursts around {@code origin}, a few ticks apart and never twice in the
-     * same place, each one a shove of its own strength.
+     * Half a minute of wind bursts around {@code origin}: rings of them, a few ticks apart, widening
+     * outwards in waves and climbing from the ground as they go, so whatever is caught is herded
+     * back to the middle and lifted.
      * <p>
      * It is laid down over time for the effect rather than for the tick budget: a hundred bursts at
      * once is one enormous shove and then stillness, while the same hundred spread over thirty
@@ -131,7 +152,7 @@ public final class DeferredStrikes {
      * block or deals a point of damage; what it costs a player is entirely where they end up.
      *
      * @param duration how long it goes on for, in ticks
-     * @param radius   how far out a burst may be let off, and how high
+     * @param radius   how wide a ring grows before the next wave starts, and what the climb is scaled by
      */
     public static void queuePinball(ServerLevel level, BlockPos origin, int duration, double radius) {
         if (duration > 0) {
@@ -245,17 +266,19 @@ public final class DeferredStrikes {
         private final LightningSong song;
         private final double radius;
         private final float volumeScale;
+        private final float damage;
         private int tick;
         private int next;
 
         private Song(ResourceKey<Level> dimension, BlockPos origin, LightningSong song, double radius,
-                     float volumeScale) {
+                     float volumeScale, float damage) {
             // Every tick, because the song decides for itself which of them a note falls on.
             super(dimension, song.notes().size(), 1);
             this.origin = origin;
             this.song = song;
             this.radius = radius;
             this.volumeScale = volumeScale;
+            this.damage = damage;
         }
 
         @Override
@@ -285,7 +308,15 @@ public final class DeferredStrikes {
                     continue;
                 }
 
-                bolt.moveTo(x, level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos).getY(), z);
+                // A scattered song finds the ground under each note; one aimed at a single point
+                // lands on that point, so a bolt that hit something in the air still hits it.
+                double y = this.radius > 0.0
+                        ? level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, pos).getY()
+                        : this.origin.getY();
+                bolt.moveTo(x, y, z);
+                if (this.damage >= 0.0F) {
+                    bolt.setDamage(this.damage);
+                }
 
                 float volume = note.volume() * this.volumeScale;
                 if (note.key() == VanillaLightningBoltEntity.NO_NOTE) {
@@ -307,45 +338,72 @@ public final class DeferredStrikes {
     /**
      * The Pinball TNT's half-minute of bursts. See {@link #queuePinball}.
      * <p>
-     * The stagger is the whole design, so it is drawn rather than fixed: a gap of between
-     * {@link #MIN_GAP} and {@link #MAX_GAP} ticks, and a strength of between {@link #MIN_POWER} and
-     * {@link #MAX_POWER} wind charges, are rolled fresh for every burst. A fixed rate would read as
-     * a machine; a rate that is never quite the same reads as a ball still bouncing.
+     * Bursts are let off in <em>rings</em> around the origin, several evenly spaced at once, and the
+     * ring widens from {@link #MIN_RING} out to the job's radius over {@link #WAVE_TICKS} before
+     * starting small again. An explosion shoves directly away from itself, so a ring shoves
+     * everything inside it towards its middle - the pushes from opposite sides cancel sideways and
+     * the nearer side wins - and everything outside it further out. Scattering single bursts at
+     * random, as this used to, threw a player out of the field on the first hit and never reached
+     * them again. A widening ring catches whoever was thrown out and, once it is past them, throws
+     * them back in; repeating the wave means that happens again and again for the whole fuse.
+     * <p>
+     * The rings start on the ground and climb over the whole duration, {@link #RISE} blocks in all. A burst below a player throws them upwards, so a field whose bursts climb keeps
+     * lifting whoever it has caught rather than pinning them to the floor.
+     * <p>
+     * The stagger is still drawn rather than fixed - a gap of {@link #MIN_GAP} to {@link #MAX_GAP}
+     * ticks between rings, a fresh strength and a fresh rotation for each - because a fixed rate
+     * reads as a machine and a rate that is never quite the same reads as a ball still bouncing.
      * <p>
      * Every burst is a {@link SimpleExplosionDamageCalculator} that breaks nothing and hurts
      * nothing. Knockback is applied outside the damage check in {@code Explosion.explode}, so an
      * explosion that damages nobody still throws everybody - which is the only thing this wants.
      */
     private static final class Pinball extends Job {
-        /** Ticks between bursts, drawn fresh each time. */
+        /** Ticks between rings, drawn fresh each time. */
         private static final int MIN_GAP = 3;
-        private static final int MAX_GAP = 10;
+        private static final int MAX_GAP = 8;
+
+        /** How many bursts make up one ring, spaced evenly around it. */
+        private static final int BURSTS_PER_RING = 6;
 
         /**
-         * How hard, as a multiple of a wind charge's own 1.22 knockback. Even the weakest burst is
-         * worth more than a wind charge: a shove that merely nudges leaves whatever it hit standing
-         * where it was, and a ball that stops rolling is not a pinball.
+         * How hard each burst is, as a multiple of a wind charge's own 1.22 knockback. Lower than a
+         * lone burst would need, because a player in the middle takes the vertical half of every
+         * burst in the ring at once.
          */
-        private static final float MIN_POWER = 3.0F;
-        private static final float MAX_POWER = 10.0F;
+        private static final float MIN_POWER = 0.35F;
+        private static final float MAX_POWER = 0.9F;
 
         /**
-         * How wide each burst reaches, which is what decides whether a given player is in it. Wider
-         * than the shove needs to be, so that a burst rolled at the far edge of the ring still
-         * reaches whoever is in the middle of it.
+         * How wide each burst reaches - an explosion throws things out to twice this - which is
+         * what lets a ring at its widest still reach the player in its middle.
          */
         private static final float BURST_RADIUS = 7.0F;
 
+        /** The ring's radius as a wave begins: close enough in that its middle is a point. */
+        private static final double MIN_RING = 1.5;
+
+        /** How long one wave takes to widen from {@link #MIN_RING} to the full radius. */
+        private static final int WAVE_TICKS = 60;
+
+        /**
+         * How many blocks the rings have climbed by the end. A fixed height rather than a multiple
+         * of the radius, since the Chicken TNT runs this over a field four times as wide.
+         */
+        private static final double RISE = 15.0;
+
         private final BlockPos origin;
         private final double radius;
+        private final int duration;
         private int cooldown;
 
         private Pinball(ResourceKey<Level> dimension, BlockPos origin, int duration, double radius) {
-            // Every tick, and the countdown between bursts is kept here rather than in the job's own
-            // interval: the interval is fixed for the life of a job and this one changes each burst.
+            // Every tick, and the countdown between rings is kept here rather than in the job's own
+            // interval: the interval is fixed for the life of a job and this one changes each ring.
             super(dimension, duration, 1);
             this.origin = origin;
             this.radius = radius;
+            this.duration = duration;
         }
 
         @Override
@@ -358,23 +416,29 @@ public final class DeferredStrikes {
                 RandomSource random = level.random;
                 this.cooldown = MIN_GAP + random.nextInt(MAX_GAP - MIN_GAP + 1);
 
-                double angle = random.nextDouble() * Math.PI * 2.0;
-                double distance = Math.sqrt(random.nextDouble()) * this.radius;
-                double x = this.origin.getX() + 0.5 + Math.cos(angle) * distance;
-                double z = this.origin.getZ() + 0.5 + Math.sin(angle) * distance;
+                int elapsed = this.duration - this.remaining;
+                double wave = (elapsed % WAVE_TICKS) / (double) WAVE_TICKS;
+                double ring = MIN_RING + (this.radius - MIN_RING) * wave;
 
-                // Bursts below as well as above, so a player is thrown up off the ground as often
-                // as they are slammed back down onto it.
-                double y = this.origin.getY() + (random.nextDouble() - 0.35) * this.radius;
+                // From the ground the TNT sat on, climbing steadily for the whole fuse.
+                double y = this.origin.getY() + 0.1 + RISE * elapsed / (double) this.duration;
 
-                if (level.isLoaded(BlockPos.containing(x, y, z))) {
-                    float power = MIN_POWER + random.nextFloat() * (MAX_POWER - MIN_POWER);
-                    level.explode(null, null,
-                            new SimpleExplosionDamageCalculator(false, false,
-                                    Optional.of(WIND_CHARGE_KNOCKBACK * power), Optional.empty()),
-                            x, y, z, BURST_RADIUS, false, Level.ExplosionInteraction.NONE,
-                            ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE,
-                            SoundEvents.WIND_CHARGE_BURST);
+                double phase = random.nextDouble() * Math.PI * 2.0;
+                float power = MIN_POWER + random.nextFloat() * (MAX_POWER - MIN_POWER);
+                SimpleExplosionDamageCalculator shove = new SimpleExplosionDamageCalculator(false, false,
+                        Optional.of(WIND_CHARGE_KNOCKBACK * power), Optional.empty());
+
+                for (int i = 0; i < BURSTS_PER_RING; i++) {
+                    double angle = phase + i * Math.PI * 2.0 / BURSTS_PER_RING;
+                    double x = this.origin.getX() + 0.5 + Math.cos(angle) * ring;
+                    double z = this.origin.getZ() + 0.5 + Math.sin(angle) * ring;
+
+                    if (level.isLoaded(BlockPos.containing(x, y, z))) {
+                        level.explode(null, null, shove, x, y, z, BURST_RADIUS, false,
+                                Level.ExplosionInteraction.NONE,
+                                ParticleTypes.GUST_EMITTER_SMALL, ParticleTypes.GUST_EMITTER_LARGE,
+                                SoundEvents.WIND_CHARGE_BURST);
+                    }
                 }
             }
 

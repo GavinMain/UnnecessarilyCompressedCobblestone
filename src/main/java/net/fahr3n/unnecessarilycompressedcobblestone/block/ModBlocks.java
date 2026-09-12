@@ -290,11 +290,11 @@ public class ModBlocks {
     public static final DeferredBlock<CompressedTntBlock> DOME_TNT =
             registerTnt("dome_tnt", CompressedTntEffect.DOME);
 
-    /** The Succ TNT with five minutes and a curve on it, and a black ball in the middle. */
+    /** Leaves a two-hour black hole that only the Black Hole Stopper can end. */
     public static final DeferredBlock<CompressedTntBlock> BLACKHOLE_TNT =
             registerTnt("blackhole_tnt", CompressedTntEffect.BLACKHOLE);
 
-    /** The Blackhole TNT's five minutes in five seconds, ending in one blast of ten thousand TNT. */
+    /** The black hole in one minute, then a flash, then one blast of ten thousand TNT. */
     public static final DeferredBlock<CompressedTntBlock> SINGULARITY_TNT =
             registerTnt("singularity_tnt", CompressedTntEffect.SINGULARITY);
 

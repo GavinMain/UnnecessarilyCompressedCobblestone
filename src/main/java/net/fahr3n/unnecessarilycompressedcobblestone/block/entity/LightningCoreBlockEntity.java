@@ -3,6 +3,7 @@ package net.fahr3n.unnecessarilycompressedcobblestone.block.entity;
 import org.jetbrains.annotations.Nullable;
 
 import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.BoltItem;
+import net.fahr3n.unnecessarilycompressedcobblestone.util.DeferredStrikes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -86,6 +87,13 @@ public class LightningCoreBlockEntity extends BlockEntity {
         }
 
         this.cooldown = STRIKE_INTERVAL;
+
+        // A song is a long performance and the core strikes once a second, so a song still playing
+        // from this core is left to finish rather than restarted on top of itself.
+        if (DeferredStrikes.isPlayingAt(serverLevel, pos.above())) {
+            return;
+        }
+
         if (this.bolt.getItem() instanceof BoltItem boltItem) {
             // One block up, so what the strike hits is whatever is standing on the core.
             boltItem.strike(serverLevel, pos.above(), this.bolt, signal, 0.0F);

@@ -2,10 +2,15 @@ package net.fahr3n.unnecessarilycompressedcobblestone.potion.custom;
 
 import javax.annotation.Nullable;
 
+import net.fahr3n.unnecessarilycompressedcobblestone.item.custom.CompressedHealingStaffItem;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.effect.InstantenousMobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.projectile.ThrownPotion;
+import net.minecraft.world.item.component.CustomData;
 
 /**
  * Instant Health with a linear dial on it: this heals {@code amplifier + 1} points rather than
@@ -38,6 +43,21 @@ public class MendingMobEffect extends InstantenousMobEffect {
         return amplifier + 1;
     }
 
+    /**
+     * What a splash is worth. The amplifier cannot say more than 256, since vanilla clamps it, so a
+     * Healing Staff bottle carries its exact figure on the item and that wins wherever it is present.
+     */
+    private static float amount(@Nullable Entity source, int amplifier) {
+        if (source instanceof ThrownPotion potion) {
+            CompoundTag tag = potion.getItem().getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
+            if (tag.contains(CompressedHealingStaffItem.HEALING_TAG)) {
+                return tag.getFloat(CompressedHealingStaffItem.HEALING_TAG);
+            }
+        }
+
+        return amount(amplifier);
+    }
+
     @Override
     public boolean applyEffectTick(LivingEntity livingEntity, int amplifier) {
         if (livingEntity.isInvertedHealAndHarm()) {
@@ -55,8 +75,8 @@ public class MendingMobEffect extends InstantenousMobEffect {
         // `health` is the splash falloff - one at the middle of the cloud, down to nothing at its
         // edge - so a potion landed at somebody's feet is worth its whole figure and one landed
         // four blocks off is worth very little of it.
-        int points = (int) (health * amount(amplifier) + 0.5);
-        if (points <= 0) {
+        float points = (float) (health * amount(source, amplifier));
+        if (points < 0.5F) {
             return;
         }
 

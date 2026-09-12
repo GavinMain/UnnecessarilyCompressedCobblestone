@@ -5,6 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
@@ -100,6 +101,24 @@ public class ModTags {
 
         private static TagKey<MobEffect> createTag(String name) {
             return TagKey.create(Registries.MOB_EFFECT,
+                    ResourceLocation.fromNamespaceAndPath(UnnecessarilyCompressedCobblestone.MOD_ID, name));
+        }
+    }
+
+    public static class EntityTypes {
+        /**
+         * Every mob in this mod that is a fight rather than a creature: the ones that give up a heart
+         * or an egg. It is also put inside NeoForge's {@code #c:bosses}, which is what other mods
+         * read before they capture, repel or copy a mob, and this tag is what the ProjectE
+         * blacklists name so that a torch in the corner cannot push a boss out of its own fight.
+         */
+        public static final TagKey<EntityType<?>> BOSSES = createTag("bosses");
+
+        /** The mobs a player keeps: tamed, hatched or ridden, and never fought. */
+        public static final TagKey<EntityType<?>> PETS = createTag("pets");
+
+        private static TagKey<EntityType<?>> createTag(String name) {
+            return TagKey.create(Registries.ENTITY_TYPE,
                     ResourceLocation.fromNamespaceAndPath(UnnecessarilyCompressedCobblestone.MOD_ID, name));
         }
     }

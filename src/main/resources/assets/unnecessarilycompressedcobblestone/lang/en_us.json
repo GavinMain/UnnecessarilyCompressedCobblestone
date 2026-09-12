@@ -853,5 +853,10 @@
   "gui.unnecessarilycompressedcobblestone.teleportation_gate.name": "This gate",
   "gui.unnecessarilycompressedcobblestone.teleportation_gate.destination": "Sends to",
   "gui.unnecessarilycompressedcobblestone.teleportation_gate.save": "Save",
-  "gui.unnecessarilycompressedcobblestone.teleportation_gate.save.tooltip": "Name this gate and aim it. Names are matched without regard to case."
+  "gui.unnecessarilycompressedcobblestone.teleportation_gate.save.tooltip": "Name this gate and aim it. Names are matched without regard to case.",
+  "jei.unnecessarilycompressedcobblestone.info.boss_drop": "There is no recipe for this. Kill the %s and it drops exactly one.",
+  "jei.unnecessarilycompressedcobblestone.info.bolt_drop": "When a %s goes off it breaks nothing, but throws out an armful of bolts. Each one is drawn at random from every bolt in the game, and this is one of them. None of the 88 piano key bolts can be crafted, so this is the only way to get them.",
+  "jei.unnecessarilycompressedcobblestone.info.carved_head": "There is no recipe for this. Carve a block of %s with shears, the way you carve a pumpkin. Then place the head on a T of %s, the shape of an iron golem, and a golem stands up. It will turn on whoever built it.",
+  "jei.unnecessarilycompressedcobblestone.info.tree": "Found on Compressed Cobblestone Trees, which grow rarely all across the Overworld. The leaves can only be broken with a pickaxe that can mine hardened stone, and they drop the sapling.",
+  "jei.unnecessarilycompressedcobblestone.info.slippery_ice": "There is no recipe for this. A %s lays it down as the floor under its sponge of ancient debris."
 }

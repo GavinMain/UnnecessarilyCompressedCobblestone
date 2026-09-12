@@ -49,6 +49,8 @@ public class DataGenerators {
         // Mob effects are a code registry, so the plain lookup provider is enough here: nothing in
         // this one is defined by a datapack.
         generator.addProvider(event.includeServer(), new ModMobEffectTagProvider(packOutput, lookupProvider));
+        generator.addProvider(event.includeServer(),
+                new ModEntityTypeTagProvider(packOutput, lookupProvider, existingFileHelper));
 
         // Client-side data: models and blockstates
         generator.addProvider(event.includeClient(), new ModItemModelProvider(packOutput, existingFileHelper));

@@ -2,12 +2,14 @@ package net.fahr3n.unnecessarilycompressedcobblestone.compat.jei;
 
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.registration.IGuiHandlerRegistration;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
 import net.fahr3n.unnecessarilycompressedcobblestone.UnnecessarilyCompressedCobblestone;
 import net.fahr3n.unnecessarilycompressedcobblestone.block.ModBlocks;
+import net.fahr3n.unnecessarilycompressedcobblestone.block.custom.CompressorTier;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.CompressionInscriberScreen;
 import net.fahr3n.unnecessarilycompressedcobblestone.screen.custom.MaterialCompressorScreen;
 import net.minecraft.resources.ResourceLocation;
@@ -52,14 +54,21 @@ public class UCCJeiPlugin implements IModPlugin {
         registration.addRecipes(CompressionInscriberCategory.TYPE, CompressionInscriberCategory.displays());
         registration.addRecipes(EngravingTableCategory.TYPE, EngravingTableCategory.displays());
         registration.addRecipes(LaserAugmentationTableCategory.TYPE, LaserAugmentationTableCategory.displays());
+
+        // What the vanilla anvil category cannot find on its own - see AnvilRecipes for why.
+        registration.addRecipes(RecipeTypes.ANVIL, AnvilRecipes.all(registration.getVanillaRecipeFactory()));
+
+        // Everything with no recipe at all, which JEI would otherwise answer with nothing.
+        InfoPages.register(registration);
     }
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        registration.addRecipeCatalysts(MaterialCompressorCategory.TYPE,
-                ModBlocks.MATERIAL_COMPRESSOR_TIER_1.get(),
-                ModBlocks.MATERIAL_COMPRESSOR_TIER_2.get(),
-                ModBlocks.MATERIAL_COMPRESSOR_TIER_3.get());
+        // Off the enum, so a sixth tier is a catalyst the day it exists. Listing the blocks by
+        // hand is how tiers 4 and 5 went missing from here.
+        for (CompressorTier tier : CompressorTier.values()) {
+            registration.addRecipeCatalyst(ModBlocks.compressor(tier).get(), MaterialCompressorCategory.TYPE);
+        }
         registration.addRecipeCatalysts(CompressionInscriberCategory.TYPE,
                 ModBlocks.COMPRESSION_INSCRIBER.get());
         registration.addRecipeCatalysts(EngravingTableCategory.TYPE,
